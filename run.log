@@ -1,0 +1,50 @@
+INFO output dir: /home/ykb/cube_position_analysis
+INFO === expert  (/home/ykb/.cache/huggingface/lerobot/YKB0123/so101_red_cube_plastic_box_front_50_20260731_104214)
+INFO [expert] detected 50 / 50
+INFO === recovery  (/home/ykb/.cache/huggingface/lerobot/YKB0123/rollout_so101_red_cube_hil_front_20261015_134746)
+WARNING [recovery] episode 5: cube NOT detected -> NaN
+WARNING [recovery] episode 8: cube NOT detected -> NaN
+WARNING [recovery] episode 9: cube NOT detected -> NaN
+WARNING [recovery] episode 10: cube NOT detected -> NaN
+WARNING [recovery] episode 12: cube NOT detected -> NaN
+WARNING [recovery] episode 13: cube NOT detected -> NaN
+WARNING [recovery] episode 15: cube NOT detected -> NaN
+WARNING [recovery] episode 16: cube NOT detected -> NaN
+WARNING [recovery] episode 17: cube NOT detected -> NaN
+INFO [recovery] detected 11 / 20
+INFO === eval_expert_smooth  (/home/ykb/.cache/huggingface/lerobot/YKB0123/rollout_eval_expert_smooth_20261104_131322)
+INFO [eval_expert_smooth] detected 24 / 24
+INFO === eval_expert_default  (/home/ykb/.cache/huggingface/lerobot/YKB0123/rollout_eval_expert_default_20261104_133651)
+INFO [eval_expert_default] detected 24 / 24
+INFO === eval_mixed_smooth  (/home/ykb/.cache/huggingface/lerobot/YKB0123/rollout_eval_mixed_smooth_20261104_121950)
+INFO [eval_mixed_smooth] detected 24 / 24
+INFO === eval_mixed_default  (/home/ykb/.cache/huggingface/lerobot/YKB0123/rollout_eval_mixed_default_20261104_124959)
+INFO [eval_mixed_default] detected 24 / 24
+INFO === eval_recovery_smooth  (/home/ykb/.cache/huggingface/lerobot/YKB0123/rollout_eval_recovery_smooth_20261104_141826)
+INFO [eval_recovery_smooth] detected 24 / 24
+INFO === eval_recovery_default  (/home/ykb/.cache/huggingface/lerobot/YKB0123/rollout_eval_recovery_default_20261104_135927)
+INFO [eval_recovery_default] detected 24 / 24
+INFO reference cube area (median of detected expert) = 278.2 px^2
+INFO wrote cube_positions.csv (214 rows)
+INFO NOT detected (9): recovery:5, recovery:8, recovery:9, recovery:10, recovery:12, recovery:13, recovery:15, recovery:16, recovery:17
+INFO episodes per (eval dataset, test position):
+position               bottom-left  bottom-right  mid-left  mid-right  top-left  top-right
+dataset                                                                                   
+eval_expert_default              4             4         5          4         3          4
+eval_expert_smooth               4             4         4          4         4          4
+eval_mixed_default               4             4         4          4         4          4
+eval_mixed_smooth                4             4         4          4         4          4
+eval_recovery_default            5             3         4          4         4          4
+eval_recovery_smooth             4             4         4          4         4          4
+WARNING cluster counts are NOT 4 per position for: ['eval_expert_default', 'eval_recovery_default'] -> check clustering / detections
+WARNING eval_expert_default episode 19 is at mid-left, but episode 19 is at top-left in most eval datasets
+WARNING eval_recovery_default episode 4 is at bottom-left, but episode 4 is at bottom-right in most eval datasets
+INFO test position distances:
+    position label_zh    cx    cy  d_expert nearest_expert  d_expert_recovery nearest_expert_recovery  d_expert_recovery_all nearest_expert_recovery_all  succ_mixed_smooth  succ_mixed_default  succ_expert_smooth  succ_expert_default  succ_recovery_smooth  succ_recovery_default
+    top-left       左上 362.4 178.0      22.4      expert:39               11.2             recovery:18                   11.2                 recovery:18                  2                   4                   2                    1                     4                      3
+    mid-left       左中 361.3 196.5       3.9      expert:39                3.9               expert:39                    3.9                   expert:39                  4                   3                   4                    4                     0                      0
+ bottom-left       左下 361.3 226.7       5.0      expert:42                4.1              recovery:1                    4.1                  recovery:1                  3                   4                   0                    0                     1                      1
+   top-right       右上 401.0 179.2      17.1      expert:48               17.1               expert:48                   17.1                   expert:48                  1                   0                   0                    0                     2                      1
+   mid-right       右中 401.8 198.3       6.0      expert:47                6.0               expert:47                    6.0                   expert:47                  4                   4                   0                    2                     2                      1
+bottom-right       右下 405.6 227.1      11.6       expert:2               11.6                expert:2                   11.6                    expert:2                  2                   2                   0                    0                     1                      0
+INFO done. report: /home/ykb/cube_position_analysis/report.md

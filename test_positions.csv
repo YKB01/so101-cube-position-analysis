@@ -1,0 +1,7 @@
+position,cx,cy,n_episodes,mean_dist_to_center,max_dist_to_center,label_zh
+bottom-right,405.59,227.15,23,3.15,9.04,右下
+mid-left,361.27,196.52,25,4.01,9.79,左中
+top-right,401.03,179.22,24,3.51,9.05,右上
+bottom-left,361.28,226.67,25,3.32,10.05,左下
+mid-right,401.84,198.31,24,3.30,6.40,右中
+top-left,362.36,177.96,23,4.46,9.69,左上
