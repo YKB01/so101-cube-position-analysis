@@ -27,3 +27,23 @@ python analyze_cube_positions.py --datasets expert  # detection + contact sheet 
 
 Outputs are written to `./cube_position_analysis/` relative to the working directory.
 Note: pixel distances are image distances, not metric table distances.
+
+## Grasp point analysis: where does the policy aim?
+
+`analyze_grasp_points.py` detects the first grasp (start of the first gripper close after opening)
+in every episode, fits a linear map from the 5 arm joint angles at that frame to the cube pixel
+position on the 50 expert episodes (validated with R² and leave-one-out error), and applies it to
+the smooth-condition eval datasets to get the position each policy aimed at.
+
+- `success.csv`: episode-level outcome (cube ended in the box = 1). Created with
+  `--make-success-template`; 0/4 and 4/4 positions are pre-filled from the aggregate table.
+- `grasp_point_analysis/report_grasp.md`: slopes (aim vs. actual), aim errors, direction of the
+  error relative to the expert data centre, and success vs. failure.
+- `grasp_point_analysis/grasp_points.csv`, `fig1_aim_arrows.png`, `fig2_aim_vs_actual.png`,
+  `fig3_error_by_position.png`, plus gripper/regression check plots.
+
+```bash
+python analyze_grasp_points.py --make-success-template   # then fill the blank success cells
+python analyze_grasp_points.py --expert-only             # grasp detection + regression check
+python analyze_grasp_points.py                           # full analysis
+```

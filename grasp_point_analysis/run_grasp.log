@@ -1,0 +1,12 @@
+INFO expert: grasp detected in 50/50 episodes
+INFO expert grasp frame: min 160, median 217, max 275; open peak 47.1-66.2
+INFO regression R2 fit x=0.898 y=0.871 | LOO x=0.867 y=0.837
+INFO LOO error: mean 4.6 px, median 4.2, max 10.4 | MAE x 3.0 y 2.8 | baseline mean 11.6 (x 7.8 y 7.3)
+INFO eval_expert_smooth: grasp detected in 24/24
+INFO eval_mixed_smooth: grasp detected in 24/24
+INFO eval_recovery_smooth: grasp detected in 24/24
+INFO loaded success.csv: 72/72 eval episodes with a value
+INFO eval_expert_smooth: slope x 0.39, slope y 0.31, mean err 20.7 px, mean cos_to_centre 0.96
+INFO eval_mixed_smooth: slope x 0.70, slope y 0.50, mean err 16.4 px, mean cos_to_centre 0.78
+INFO eval_recovery_smooth: slope x 0.72, slope y 0.56, mean err 17.7 px, mean cos_to_centre 0.41
+INFO done: /home/ykb/cube_position_analysis/grasp_point_analysis
