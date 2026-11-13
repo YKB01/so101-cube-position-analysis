@@ -1,0 +1,23 @@
+INFO detected 20/20; flagged: none
+INFO distribution summary:
+                 group  n  cx_mean  cx_std  cx_min  cx_max  cy_mean  cy_std  cy_min  cy_max
+       old expert (50) 50    381.3     9.9   356.9   398.0    211.9     9.0   189.4   229.2
+       new_expert (20) 20    381.9    21.0   354.8   410.8    205.5    19.7   170.9   246.3
+recovery (11 detected) 11    354.1     7.0   337.4   365.0    213.9    19.9   182.5   253.1
+INFO KS test new vs recovery: cx p=0.000, cy p=0.601
+INFO KS test new vs old expert: cx p=0.007, cy p=0.039
+INFO new samples inside the recovery bounding box: 6/20
+INFO distance to nearest test position: min 4.2, median 8.3, max 20.7 px
+INFO samples closer than 5 px to a test position: [[4, 'mid-left', 4.7], [9, 'mid-right', 4.4], [18, 'top-left', 4.2]]
+INFO per test position (new samples whose nearest test position it is):
+              count  min  median
+nearest_test                    
+bottom-left       6  5.7    13.3
+bottom-right      3  8.1     8.3
+mid-left          3  4.7    10.7
+mid-right         4  4.4     7.6
+top-left          2  4.2     5.6
+top-right         2  5.2     6.8
+INFO old expert: min distance to a test position 3.9 px (median 17.7)
+INFO recovery: min distance to a test position 4.1 px (median 11.2)
+INFO done: /home/ykb/cube_position_analysis/new_expert_position_check

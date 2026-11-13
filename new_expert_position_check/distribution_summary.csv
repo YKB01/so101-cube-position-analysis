@@ -1,0 +1,4 @@
+group,n,cx_mean,cx_std,cx_min,cx_max,cy_mean,cy_std,cy_min,cy_max
+old expert (50),50,381.3,9.9,356.9,398.0,211.9,9.0,189.4,229.2
+new_expert (20),20,381.9,21.0,354.8,410.8,205.5,19.7,170.9,246.3
+recovery (11 detected),11,354.1,7.0,337.4,365.0,213.9,19.9,182.5,253.1
