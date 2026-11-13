@@ -1,0 +1,23 @@
+INFO per position metrics:
+    position    cx    cy training_set  nearest_px     nearest_src           nearest_method  mean3_px  n_within_17  n_within_34  x_margin_px  rightmost_src
+right-bottom 410.8 207.6        mixed         7.3   recovery20:10 first_still_before_grasp       9.3            8           43          3.5  recovery20:17
+right-bottom 410.8 207.6      control         5.0  new_expert20:5              first_frame       8.3            7           42         -0.0 new_expert20:5
+   right-top 403.6 182.1        mixed         8.4   recovery20:16 first_still_before_grasp      10.4            6           25         -3.6  recovery20:17
+   right-top 403.6 182.1      control         8.2 new_expert20:15              first_frame      10.0            6           25         -7.2 new_expert20:5
+INFO per-episode nearest distance (mean/max):
+                          mixed_nearest_px       control_nearest_px      
+                                      mean   max               mean   max
+dataset      position                                                    
+edge_control right-bottom              6.2   8.3                4.6   6.1
+             right-top                 7.0   8.7                7.1   8.0
+edge_mixed   right-bottom              9.7  11.5                6.0   6.8
+             right-top                 8.8  12.6                8.5  10.8
+INFO edge vs standard positions:
+    position     standard  dx_right_px  dy_down_px  dist_px
+right-bottom bottom-right          5.2       -19.5     20.2
+right-bottom    top-right          9.8        28.4     30.0
+right-bottom    mid-right          8.9         9.3     12.9
+   right-top bottom-right         -1.9       -45.1     45.1
+   right-top    top-right          2.6         2.8      3.9
+   right-top    mid-right          1.8       -16.2     16.3
+INFO analyze stage done: /home/ykb/cube_position_analysis/right_side_test_analysis

@@ -1,0 +1,5 @@
+dataset,position,n,cx,cy,cx_std,cy_std,max_dist
+edge_control,right-bottom,8,407.6,207.1,2.1,0.5,5.3
+edge_control,right-top,8,402.7,182.5,0.9,2.6,6.0
+edge_mixed,right-bottom,8,414.0,208.1,2.5,1.2,6.5
+edge_mixed,right-top,8,404.6,181.7,3.5,0.6,8.1

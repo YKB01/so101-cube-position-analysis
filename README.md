@@ -47,3 +47,21 @@ python analyze_grasp_points.py --make-success-template   # then fill the blank s
 python analyze_grasp_points.py --expert-only             # grasp detection + regression check
 python analyze_grasp_points.py                           # full analysis
 ```
+
+## Data-volume control experiment and extra right-side test
+
+Control model: expert 50 + 20 newly collected expert episodes, fine-tuned with exactly the settings of the
+mixed model (expert 50 + recovery 20): same baseline checkpoint, 5,000 steps, batch size 8, lr 5e-6, seed 42.
+
+- `check_new_expert_positions.py` -> `new_expert_position_check/`: first-frame cube positions of the 20 new
+  expert episodes, distance to the 6 test positions, contact sheet, distribution plot.
+- `resolve_recovery_cube_positions.py` -> `recovery_position_check/`: cube position of the 9 recovery
+  episodes whose cube is hidden in frame 0 (first 10-frame still, visible window before the first grasp),
+  validated on the 11 episodes where frame 0 already shows the cube.
+- `control_training_check/`: training loss curves of the two fine-tuning runs.
+- `analyze_right_side_test.py` -> `right_side_test_analysis/` (`--stage detect | analyze | all`): extra test at
+  two positions on the right side (8 trials each). Clusters the first-frame cube positions into the two test
+  positions and compares the distance to the nearest training sample for both training sets.
+  Result and criteria: `right_side_test_analysis/report_right_side.md`.
+
+Pixel distances are image distances, not distances on the table.
