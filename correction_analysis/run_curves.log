@@ -1,0 +1,39 @@
+INFO shoulder_pan coefficient of the regression (cx): 2.640 px per unit
+INFO speed at the grasp frame and in the last second, median by model/position:
+INFO 
+     dataset     position  n  grasp_frame_median  speed_peak_in_window  speed_at_grasp  speed_median_last_1s  pan_range_last_1s  pan_change_last_1s
+  edge_mixed    right-top  8                 242                 91.03            6.07                  6.37               1.89                1.89
+  edge_mixed right-bottom  8                 227                 90.03            5.06                  5.07               1.01                1.01
+edge_control    right-top  8                 193                145.67            7.10                 31.98               2.29                2.24
+edge_control right-bottom  8                 156                140.69            9.22                 33.78               3.96                3.74
+INFO median duration from rule end to grasp (s), hold = 5 frames:
+dataset  edge_control             edge_mixed          
+position right-bottom right-top right-bottom right-top
+thresh                                                
+5                 NaN      0.05         0.63      0.67
+10               0.05      0.18         0.77      0.93
+15               0.13      0.27         0.93      1.10
+20               0.27      0.25         1.10      1.23
+30               0.43      0.47         1.43      1.47
+40               0.57      0.62         1.58      1.70
+INFO PREVIEW median shoulder_pan correction (px, + = right) from rule end to grasp, hold = 5 frames:
+dataset  edge_control             edge_mixed          
+position right-bottom right-top right-bottom right-top
+thresh                                                
+5                 NaN       0.0          1.6       2.9
+10                0.1       0.0          1.7       3.5
+15                0.0       0.0          2.2       5.6
+20                0.0       0.0          3.0       5.6
+30                1.2       0.5          5.6       8.9
+40                3.7       1.7          6.5      10.1
+INFO episodes where the rule finds an end (of 8), hold = 5 frames:
+dataset  edge_control             edge_mixed          
+position right-bottom right-top right-bottom right-top
+thresh                                                
+5                 0.0       4.0          7.0       4.0
+10                6.0       4.0          8.0       8.0
+15                7.0       7.0          8.0       8.0
+20                7.0       8.0          8.0       8.0
+30                7.0       8.0          8.0       8.0
+40                7.0       8.0          8.0       8.0
+INFO step 1 done: /home/ykb/cube_position_analysis/correction_analysis

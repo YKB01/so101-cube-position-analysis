@@ -47,10 +47,33 @@ TEST_POS_CSV = HERE / "test_positions.csv"
 ASSIGN_CSV = HERE / "eval_cluster_assignments.csv"
 SUCCESS_CSV = HERE / "success.csv"  # optional: dataset, episode_index, success (0/1)
 
+# Datasets added after the first analysis. They are registered in analyze_cube_positions.DATASETS at runtime only
+# (the file itself is not changed, so its own clustering/results stay as they were).
+EXTRA_DATASETS = {
+    "eval_expert70_smooth": "rollout_eval_expertmixed_smooth_20261112_134559",       # control model, 6 standard positions
+    "edge_mixed": "rollout_eval_edge_hilmixed_smooth_20261112_144609",              # right-side extra test, mixed model
+    "edge_control": "rollout_eval_edge_expertmixed_smooth_20261112_145925",         # right-side extra test, control model
+}
+A.DATASETS.update(EXTRA_DATASETS)
+EDGE_KEYS = ["edge_mixed", "edge_control"]
+EDGE_POSITIONS_CSV = HERE / "right_side_test_analysis" / "edge_positions.csv"
+EXTRA_POSITIONS_CSV = OUT_DIR / "extra_cube_positions.csv"   # first-frame positions of eval_expert70_smooth (written here)
+
 TRAIN_KEY = "expert"
-EVAL_KEYS = ["eval_expert_smooth", "eval_mixed_smooth", "eval_recovery_smooth"]
+EVAL_KEYS = ["eval_expert_smooth", "eval_mixed_smooth", "eval_recovery_smooth", "eval_expert70_smooth"]
 DATASET_LABEL = {"eval_expert_smooth": "expert", "eval_mixed_smooth": "mixed",
-                 "eval_recovery_smooth": "recovery-only"}
+                 "eval_recovery_smooth": "recovery-only", "eval_expert70_smooth": "control (expert 70)",
+                 "edge_mixed": "mixed (extra test)", "edge_control": "control (extra test)"}
+MARKER = {"eval_expert_smooth": "o", "eval_mixed_smooth": "s", "eval_recovery_smooth": "^",
+          "eval_expert70_smooth": "D"}   # secondary encoding in the overlay plots (colour alone is not enough for 4)
+SUCCESS_KEYS = EVAL_KEYS + EDGE_KEYS
+# Success counts (successes, trials) per position for the datasets that are not in analyze_cube_positions.SUCCESS
+EXTRA_SUCCESS = {
+    "eval_expert70_smooth": {"bottom-left": (4, 4), "bottom-right": (0, 4), "mid-left": (4, 4),
+                             "mid-right": (3, 4), "top-left": (4, 4), "top-right": (2, 4)},
+    "edge_mixed": {"right-bottom": (8, 8), "right-top": (4, 8)},
+    "edge_control": {"right-bottom": (2, 8), "right-top": (0, 8)},
+}
 
 ARM_JOINTS = ["shoulder_pan.pos", "shoulder_lift.pos", "elbow_flex.pos",
               "wrist_flex.pos", "wrist_roll.pos"]
@@ -71,7 +94,7 @@ MOVING_SPEED = 20.0  # arm joint speed (norm of 5 joints, units/s) above which t
 
 # --- plotting ----------------------------------------------------------------
 C_DS = {"eval_expert_smooth": "#2a78d6", "eval_mixed_smooth": "#eb6834",
-        "eval_recovery_smooth": "#1baf7a"}   # reference palette, first 3 slots
+        "eval_recovery_smooth": "#1baf7a", "eval_expert70_smooth": "#6250d6"}   # reference palette slots 1,2,3,7
 C_TRAIN = "#8a8984"
 C_TEXT, C_TEXT_2 = "#0b0b0b", "#52514e"
 POSITION_ORDER = ["top-left", "mid-left", "bottom-left", "top-right", "mid-right", "bottom-right"]
@@ -156,9 +179,65 @@ def grasp_table(key: str) -> pd.DataFrame:
 
 
 def load_cube(key: str) -> pd.DataFrame:
-    c = pd.read_csv(CUBE_CSV)
-    c = c[c.dataset == key][["episode_index", "cx", "cy", "detected"]]
+    """First-frame cube position: cube_positions.csv for the original datasets, edge_positions.csv for the
+    right-side extra test, extra_cube_positions.csv for the control model's standard evaluation."""
+    if key in EDGE_KEYS:
+        c = pd.read_csv(EDGE_POSITIONS_CSV)
+        c = c[c.dataset == key].assign(detected=True)
+    elif key in EXTRA_DATASETS:
+        c = pd.read_csv(EXTRA_POSITIONS_CSV)
+        c = c[c.dataset == key]
+    else:
+        c = pd.read_csv(CUBE_CSV)
+        c = c[c.dataset == key]
+    c = c[["episode_index", "cx", "cy", "detected"]]
     return c.rename(columns={"cx": "cube_cx", "cy": "cube_cy"})
+
+
+def load_positions() -> pd.DataFrame:
+    """dataset, episode_index, position for every eval / extra-test episode."""
+    parts = [pd.read_csv(ASSIGN_CSV)[["dataset", "episode_index", "position"]]]
+    if EXTRA_POSITIONS_CSV.exists():
+        parts.append(pd.read_csv(EXTRA_POSITIONS_CSV)[["dataset", "episode_index", "position"]])
+    if EDGE_POSITIONS_CSV.exists():
+        parts.append(pd.read_csv(EDGE_POSITIONS_CSV)[["dataset", "episode_index", "position"]])
+    return pd.concat(parts, ignore_index=True)
+
+
+def detect_extra_positions(key: str = "eval_expert70_smooth"):
+    """First-frame cube detection (same detector and ROI as analyze_cube_positions) for a dataset with the 6
+    standard positions, assigned to the nearest existing test position (test_positions.csv is not changed)."""
+    ds_dir = A.LEROBOT_ROOT / A.DATASETS[key]
+    centers = pd.read_csv(TEST_POS_CSV)
+    rows, tiles = [], []
+    for ep, rgb in A.first_frames(ds_dir):
+        d = A.detect_cube(rgb)
+        pos, dist = None, np.nan
+        if d["detected"]:
+            dd = np.hypot(centers.cx - d["cx"], centers.cy - d["cy"])
+            pos, dist = centers.position.iloc[int(dd.argmin())], float(dd.min())
+        else:
+            log.warning("[%s] episode %d: cube NOT detected in frame 0", key, ep)
+        rows.append(dict(dataset=key, episode_index=ep, cx=d["cx"], cy=d["cy"], area=d["area"],
+                         detected=bool(d["detected"]), position=pos, dist_to_center=dist))
+        tiles.append(A.make_tile(rgb, d, f"ep {ep}  ({d['cx']:.0f},{d['cy']:.0f})  {pos}" if d["detected"]
+                                 else f"ep {ep}  NOT DETECTED"))
+    df = pd.DataFrame(rows)
+    A.save_contact_sheet(tiles, f"{key}: first frames, {int(df.detected.sum())}/{len(df)} detected, "
+                                "position = nearest standard test position", OUT_DIR / f"contact_{key}.png")
+    prev = pd.read_csv(EXTRA_POSITIONS_CSV) if EXTRA_POSITIONS_CSV.exists() else pd.DataFrame()
+    if len(prev):
+        prev = prev[prev.dataset != key]
+    pd.concat([prev, df], ignore_index=True).to_csv(EXTRA_POSITIONS_CSV, index=False, float_format="%.2f")
+    ct = df.groupby("position").size()
+    log.info("[%s] episodes per position: %s | max distance to a test position %.1f px", key, ct.to_dict(),
+             df.dist_to_center.max())
+    seq = {"bottom-left": "BL", "bottom-right": "BR", "mid-left": "ML", "mid-right": "MR", "top-left": "TL",
+           "top-right": "TR"}
+    log.info("[%s] episode order: %s", key, " ".join(seq.get(p, "?") for p in df.position))
+    if (ct != A.TRIALS_PER_POSITION).any() or len(ct) != len(centers):
+        log.warning("[%s] positions are NOT 4 episodes each: check detection / placement", key)
+    return df
 
 
 # =============================================================================
@@ -307,7 +386,8 @@ def plot_aim_arrows(plt, bg, gp, train_cube, centers, center, path):
     import matplotlib.patheffects as pe
     pts = np.r_[gp[["aim_x", "aim_y"]].to_numpy(float), gp[["cube_cx", "cube_cy"]].to_numpy(float)]
     x0, y0, x1, y1 = _zoom_box(pts)
-    fig, axes = plt.subplots(1, 3, figsize=(16, 16 / 3 * (y1 - y0) / (x1 - x0) + 1.3), sharey=True)
+    n = len(EVAL_KEYS)
+    fig, axes = plt.subplots(1, n, figsize=(5.4 * n, 5.4 * (y1 - y0) / (x1 - x0) + 1.3), sharey=True)
     for ax, key in zip(axes, EVAL_KEYS):
         ax.imshow(bg, alpha=0.7)
         ax.scatter(train_cube.cube_cx, train_cube.cube_cy, s=10, c=C_TRAIN, zorder=3,
@@ -346,7 +426,7 @@ def plot_aim_vs_actual(plt, gp, slopes, path):
         for key in EVAL_KEYS:
             g = gp[gp.dataset == key].dropna(subset=[acol])
             s = slopes[key][axis]
-            ax.scatter(g[ccol], g[acol], s=26, c=C_DS[key], edgecolors="white", linewidths=0.8, zorder=3,
+            ax.scatter(g[ccol], g[acol], s=30, c=C_DS[key], marker=MARKER[key], edgecolors="white", linewidths=0.8, zorder=3,
                        label=f"{DATASET_LABEL[key]}: slope {s['slope']:.2f} [{s['ci_lo']:.2f}, {s['ci_hi']:.2f}]")
             xs = np.array([g[ccol].min(), g[ccol].max()])
             ax.plot(xs, s["intercept"] + s["slope"] * xs, color=C_DS[key], lw=2, zorder=2)
@@ -388,38 +468,64 @@ def plot_err_box(plt, gp, path):
 # Episode-level success (optional success.csv)
 # =============================================================================
 def expected_successes(key: str) -> dict:
-    """Per-position success counts for an eval dataset from the aggregate table in analyze_cube_positions."""
+    """{position: (successes, trials)} from the aggregate tables (analyze_cube_positions.SUCCESS or EXTRA_SUCCESS)."""
+    if key in EXTRA_SUCCESS:
+        return EXTRA_SUCCESS[key]
     col = A.SUCCESS_COLS.index(key.removeprefix("eval_"))
-    return {pos: counts[col] for pos, counts in A.SUCCESS.items()}
+    return {pos: (counts[col], A.TRIALS_PER_POSITION) for pos, counts in A.SUCCESS.items()}
+
+
+def _template_rows(key: str, positions: pd.DataFrame) -> list[dict]:
+    exp = expected_successes(key)
+    rows = []
+    for r in positions[positions.dataset == key].sort_values("episode_index").itertuples():
+        k, n = exp[r.position]
+        full = k in (0, n)
+        rows.append(dict(dataset=key, episode_index=r.episode_index, position=r.position,
+                         success=(1 if k else 0) if full else "",
+                         source=f"auto: {k}/{n} at position" if full else "",
+                         hint="" if full else f"FILL 0/1: {k} of {n} at this position succeeded"))
+    return rows
 
 
 def make_success_template(path: Path, force: bool = False):
-    """Write success.csv: rows at 0/4 or 4/4 positions are pre-filled, the rest is left blank."""
+    """Write success.csv from scratch: rows at all-fail / all-success positions are pre-filled, the rest is blank."""
     if path.exists() and not force:
-        raise SystemExit(f"{path} already exists; use --force to overwrite (your entries would be lost)")
-    assign = pd.read_csv(ASSIGN_CSV)
-    rows = []
-    for key in EVAL_KEYS:
-        exp = expected_successes(key)
-        a = assign[assign.dataset == key].sort_values("episode_index")
-        for r in a.itertuples():
-            k = exp[r.position]
-            full = k in (0, A.TRIALS_PER_POSITION)
-            rows.append(dict(dataset=key, episode_index=r.episode_index, position=r.position,
-                             success=(1 if k else 0) if full else "",
-                             source=f"auto: {k}/{A.TRIALS_PER_POSITION} at position" if full else "",
-                             hint="" if full else f"FILL 0/1: {k} of {A.TRIALS_PER_POSITION} at this position succeeded"))
-    t = pd.DataFrame(rows)
+        raise SystemExit(f"{path} already exists; use --force to overwrite (your entries would be lost), "
+                         "or --add-success-rows to append rows for new datasets")
+    pos = load_positions()
+    t = pd.DataFrame([r for key in SUCCESS_KEYS if (pos.dataset == key).any() for r in _template_rows(key, pos)])
     t.to_csv(path, index=False)
-    n_blank = (t.success == "").sum()
-    log.info("wrote %s: %d rows, %d pre-filled, %d to fill", path, len(t), len(t) - n_blank, n_blank)
-    for key in EVAL_KEYS:
-        b = t[(t.dataset == key) & (t.success == "")]
-        log.info("  %s: fill episodes %s", key, b.episode_index.tolist() or "none")
+    log.info("wrote %s: %d rows, %d to fill", path, len(t), (t.success == "").sum())
 
 
-def load_success(path: Path, gp: pd.DataFrame) -> pd.DataFrame | None:
-    """Read success.csv; blank = unknown. Validates values and per-position totals."""
+def add_success_rows(path: Path):
+    """Append rows for datasets that are not in success.csv yet. Existing rows are left untouched."""
+    t = pd.read_csv(path)
+    pos = load_positions()
+    new_rows = []
+    for key in SUCCESS_KEYS:
+        if (t.dataset == key).any():
+            continue
+        if not (pos.dataset == key).any():
+            log.warning("no episode positions for %s: run the detection stage first", key)
+            continue
+        new_rows += _template_rows(key, pos)
+    if not new_rows:
+        log.info("%s already has rows for every dataset", path.name)
+        return
+    out = pd.concat([t, pd.DataFrame(new_rows)], ignore_index=True)
+    out.to_csv(path, index=False)
+    nr = pd.DataFrame(new_rows)
+    log.info("appended %d rows to %s (%d pre-filled, %d to fill)", len(nr), path.name,
+             int((nr.success != "").sum()), int((nr.success == "").sum()))
+    for (key, p), g in nr[nr.success == ""].groupby(["dataset", "position"]):
+        log.info("  FILL: %s %s episodes %s (%s)", key, p, g.episode_index.tolist(), g.hint.iloc[0])
+
+
+def load_success(path: Path, positions: pd.DataFrame) -> pd.DataFrame | None:
+    """Read success.csv; blank = unknown (never replaced by a placeholder). Validates values and per-position totals.
+    `positions` has dataset, episode_index, position for every episode that should have a label."""
     if not path.exists():
         log.info("no %s found -> success/failure split skipped", path.name)
         return None
@@ -427,7 +533,7 @@ def load_success(path: Path, gp: pd.DataFrame) -> pd.DataFrame | None:
     for c in ("dataset", "episode_index", "success"):
         if c not in s:
             raise SystemExit(f"{path.name}: missing column '{c}'")
-    s = s[s.dataset.isin(EVAL_KEYS)].copy()
+    s = s[s.dataset.isin(SUCCESS_KEYS)].copy()
     s["success"] = pd.to_numeric(s.success, errors="coerce")
     bad = s[s.success.notna() & ~s.success.isin([0, 1])]
     if len(bad):
@@ -436,19 +542,27 @@ def load_success(path: Path, gp: pd.DataFrame) -> pd.DataFrame | None:
     if len(dup):
         raise SystemExit(f"{path.name}: duplicate rows {dup[['dataset', 'episode_index']].to_dict('records')}")
     s = s[["dataset", "episode_index", "success"]]
-    m = gp[["dataset", "episode_index", "position"]].merge(s, on=["dataset", "episode_index"], how="left")
+    pos = positions[positions.dataset.isin(SUCCESS_KEYS)]
+    m = pos[["dataset", "episode_index", "position"]].merge(s, on=["dataset", "episode_index"], how="left")
     missing = m[m.success.isna()]
-    if len(missing):
-        log.warning("%s: %d eval episodes without a 0/1 value (treated as unknown): %s", path.name, len(missing),
-                    ", ".join(f"{r.dataset}:{r.episode_index}" for r in missing.itertuples()))
-    # per-position totals vs. the aggregate success table (only for fully filled positions)
-    for (key, pos), g in m.groupby(["dataset", "position"]):
-        exp = expected_successes(key).get(pos)
-        if g.success.notna().all() and exp is not None and int(g.success.sum()) != exp:
-            log.warning("%s %s: %d successes in %s but %d/%d in the aggregate table", key, pos,
-                        int(g.success.sum()), path.name, exp, A.TRIALS_PER_POSITION)
-    log.info("loaded %s: %d/%d eval episodes with a value", path.name, m.success.notna().sum(), len(m))
+    for key, g in missing.groupby("dataset"):
+        log.warning("%s: %d episodes of %s without a 0/1 value (unknown, excluded from success/failure statistics): %s",
+                    path.name, len(g), key, g.episode_index.tolist())
+    for (key, p), g in m.groupby(["dataset", "position"]):
+        k_n = expected_successes(key).get(p)
+        if g.success.notna().all() and k_n is not None and int(g.success.sum()) != k_n[0]:
+            log.warning("%s %s: %d successes in %s but %d/%d in the aggregate table", key, p,
+                        int(g.success.sum()), path.name, k_n[0], k_n[1])
+    log.info("loaded %s: %d/%d episodes with a value", path.name, m.success.notna().sum(), len(m))
     return s
+
+
+def complete_success_datasets(success: pd.DataFrame | None, positions: pd.DataFrame) -> set:
+    """Datasets whose every episode has a 0/1 label (only these are used in success/failure statistics)."""
+    if success is None:
+        return set()
+    m = positions[positions.dataset.isin(SUCCESS_KEYS)].merge(success, on=["dataset", "episode_index"], how="left")
+    return {k for k, g in m.groupby("dataset") if g.success.notna().all()}
 
 
 # =============================================================================
@@ -467,7 +581,18 @@ def fmt(v, d=2):
     return "nan" if v is None or (isinstance(v, float) and np.isnan(v)) else f"{v:.{d}f}"
 
 
-def write_report(path, grasps_train, stats, gp=None, slopes=None, center=None, success=None):
+RIGHT_POSITIONS = ["mid-right", "bottom-right", "top-right"]
+
+
+def mean_err_x_table(gp: pd.DataFrame) -> pd.DataFrame:
+    g = gp.dropna(subset=["aim_x"])
+    t = g.pivot_table(index="position", columns="dataset", values="err_x", aggfunc="mean").reindex(columns=EVAL_KEYS)
+    t.columns = [DATASET_LABEL[c] for c in t.columns]
+    order = RIGHT_POSITIONS + [p for p in POSITION_ORDER if p not in RIGHT_POSITIONS]
+    return t.reindex([p for p in order if p in t.index]).round(1)
+
+
+def write_report(path, grasps_train, stats, gp=None, slopes=None, center=None, success=None, complete=None):
     L = ["# Grasp point analysis: where does the policy aim?", ""]
     L += ["## Grasp detection", "",
           f"Signal: `{GRIPPER_SIGNAL}` gripper. Open state = gripper >= {OPEN_MIN:g} for {OPEN_HOLD} frames; "
@@ -527,19 +652,29 @@ def write_report(path, grasps_train, stats, gp=None, slopes=None, center=None, s
                .round(2).reset_index())
         per["position"] = pd.Categorical(per.position, POSITION_ORDER)
         L += [per.sort_values(["dataset", "position"]).to_markdown(index=False)]
+        px = mean_err_x_table(gp)
+        L += ["", "### Horizontal aim error (mean err_x = aim x - cube x, px) by position, all four models", "",
+              "Positive = aim to the right of the cube, negative = to the left. Right-side positions first.", "",
+              px.to_markdown(), "",
+              f"Full table: `{OUT_DIR.name}/mean_err_x_by_position.csv`."]
         L += ["", "## Success vs. failure", ""]
+        complete = complete or set()
         if success is None:
             L += [f"No episode-level success record found. Run `python analyze_grasp_points.py "
                   f"--make-success-template`, fill the blank `success` cells (0/1) in `{SUCCESS_CSV.name}` "
                   "and re-run."]
         else:
-            s = (gp.dropna(subset=["aim_x", "success"]).groupby(["dataset", "success"])
+            use = gp[gp.dataset.isin(complete)]
+            s = (use.dropna(subset=["aim_x", "success"]).groupby(["dataset", "success"])
                  .agg(n=("err_norm", "size"), mean_err=("err_norm", "mean"), median_err=("err_norm", "median"),
                       mean_cos_to_centre=("cos_to_centre", "mean")).round(2).reset_index())
             L += [s.to_markdown(index=False)]
-            miss = gp[gp.success.isna()]
-            if len(miss):
-                L += ["", f"{len(miss)} eval episodes have no entry in {SUCCESS_CSV.name}."]
+            for key in EVAL_KEYS:
+                if key not in complete:
+                    n_lab = int(gp[gp.dataset == key].success.notna().sum())
+                    L += ["", f"{key}: success/failure statistics skipped, only {n_lab}/"
+                              f"{int((gp.dataset == key).sum())} episodes have a 0/1 label in {SUCCESS_CSV.name} "
+                              "(blank cells are not replaced by placeholders)."]
     path.write_text("\n".join(L) + "\n")
 
 
@@ -551,13 +686,26 @@ def main():
     ap.add_argument("--make-success-template", action="store_true",
                     help=f"write {SUCCESS_CSV.name} (0/4 and 4/4 positions pre-filled) and exit")
     ap.add_argument("--force", action="store_true", help=f"allow overwriting an existing {SUCCESS_CSV.name}")
+    ap.add_argument("--add-success-rows", action="store_true",
+                    help=f"append rows for datasets that are not in {SUCCESS_CSV.name} yet (existing rows untouched) and exit")
     args = ap.parse_args()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s",
                         handlers=[logging.StreamHandler(sys.stdout),
                                   logging.FileHandler(OUT_DIR / "run_grasp.log", mode="w")])
+    def ensure_extra_positions():
+        have = pd.read_csv(EXTRA_POSITIONS_CSV).dataset.unique() if EXTRA_POSITIONS_CSV.exists() else []
+        for k in EXTRA_DATASETS:
+            if k not in EDGE_KEYS and k not in have:
+                detect_extra_positions(k)
+
     if args.make_success_template:
+        ensure_extra_positions()
         make_success_template(SUCCESS_CSV, args.force)
+        return
+    if args.add_success_rows:
+        ensure_extra_positions()
+        add_success_rows(SUCCESS_CSV)
         return
     plt = _mpl()
 
@@ -594,8 +742,9 @@ def main():
         return
 
     # ---- eval datasets ---------------------------------------------------------
+    ensure_extra_positions()
     centers = pd.read_csv(TEST_POS_CSV)
-    assign = pd.read_csv(ASSIGN_CSV)[["dataset", "episode_index", "position"]]
+    assign = load_positions()
     center = train[["cube_cx", "cube_cy"]].mean().to_numpy()
     parts = []
     for key in EVAL_KEYS:
@@ -621,9 +770,12 @@ def main():
     err = gp[["err_x", "err_y"]].to_numpy(float)
     gp["cos_to_centre"] = (err * to_c).sum(1) / (np.linalg.norm(err, axis=1) * np.linalg.norm(to_c, axis=1))
 
-    success = load_success(SUCCESS_CSV, gp)
+    positions_all = load_positions()
+    success = load_success(SUCCESS_CSV, positions_all)
+    complete = complete_success_datasets(success, positions_all)
     if success is not None:
         gp = gp.merge(success, on=["dataset", "episode_index"], how="left")
+        log.info("datasets with complete success labels: %s", sorted(complete))
 
     cols = ["dataset", "episode_index", "position", "cube_cx", "cube_cy", "aim_x", "aim_y", "err_x", "err_y",
             "err_norm", "grasp_frame"] + ARM_JOINTS + ["grasp_time_s", "arm_speed_at_grasp", "cos_to_centre"]
@@ -638,11 +790,12 @@ def main():
                  slopes[k]["x"]["slope"], slopes[k]["y"]["slope"], gp[gp.dataset == k].err_norm.mean(),
                  gp[gp.dataset == k].cos_to_centre.mean())
 
+    mean_err_x_table(gp).to_csv(OUT_DIR / "mean_err_x_by_position.csv")
     bg = decode_frame(*A.BACKGROUND_FRAME)
     plot_aim_arrows(plt, bg, gp, train, centers, center, OUT_DIR / "fig1_aim_arrows.png")
     plot_aim_vs_actual(plt, gp, slopes, OUT_DIR / "fig2_aim_vs_actual.png")
     plot_err_box(plt, gp, OUT_DIR / "fig3_error_by_position.png")
-    write_report(OUT_DIR / "report_grasp.md", gt, stats, gp, slopes, center, success)
+    write_report(OUT_DIR / "report_grasp.md", gt, stats, gp, slopes, center, success, complete)
     log.info("done: %s", OUT_DIR)
 
 

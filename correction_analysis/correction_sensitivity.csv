@@ -1,0 +1,4 @@
+thresh,n_found_mixed,n_found_control,median_correction_px_mixed,median_correction_px_control,median_diff,p,error_shrinks_mixed_p,median_abs_pre_mixed,median_abs_pre_control,conclusion
+10,16,10,3.133,0.0,3.133,0.0,0.0,17.142,11.2162,undecided
+20,16,15,4.9896,0.0,4.9896,0.0,0.0,17.6891,10.3244,undecided
+30,16,15,7.5425,0.4642,7.0783,0.0,0.0,19.9967,10.484,correction

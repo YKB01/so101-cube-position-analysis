@@ -15,22 +15,22 @@ eval_expert_smooth,12,mid-right,0,auto: 0/4 at position,
 eval_expert_smooth,13,mid-right,0,auto: 0/4 at position,
 eval_expert_smooth,14,mid-right,0,auto: 0/4 at position,
 eval_expert_smooth,15,mid-right,0,auto: 0/4 at position,
-eval_expert_smooth,16,top-left,0,,FILL 0/1: 2 of 4 at this position succeeded
-eval_expert_smooth,17,top-left,1,,FILL 0/1: 2 of 4 at this position succeeded
-eval_expert_smooth,18,top-left,0,,FILL 0/1: 2 of 4 at this position succeeded
-eval_expert_smooth,19,top-left,1,,FILL 0/1: 2 of 4 at this position succeeded
+eval_expert_smooth,16,top-left,0,,2 of 4 at this position succeeded
+eval_expert_smooth,17,top-left,1,,2 of 4 at this position succeeded
+eval_expert_smooth,18,top-left,0,,2 of 4 at this position succeeded
+eval_expert_smooth,19,top-left,1,,2 of 4 at this position succeeded
 eval_expert_smooth,20,top-right,0,auto: 0/4 at position,
 eval_expert_smooth,21,top-right,0,auto: 0/4 at position,
 eval_expert_smooth,22,top-right,0,auto: 0/4 at position,
 eval_expert_smooth,23,top-right,0,auto: 0/4 at position,
-eval_mixed_smooth,0,bottom-left,1,,FILL 0/1: 3 of 4 at this position succeeded
-eval_mixed_smooth,1,bottom-left,1,,FILL 0/1: 3 of 4 at this position succeeded
-eval_mixed_smooth,2,bottom-left,0,,FILL 0/1: 3 of 4 at this position succeeded
-eval_mixed_smooth,3,bottom-left,1,,FILL 0/1: 3 of 4 at this position succeeded
-eval_mixed_smooth,4,bottom-right,1,,FILL 0/1: 2 of 4 at this position succeeded
-eval_mixed_smooth,5,bottom-right,1,,FILL 0/1: 2 of 4 at this position succeeded
-eval_mixed_smooth,6,bottom-right,0,,FILL 0/1: 2 of 4 at this position succeeded
-eval_mixed_smooth,7,bottom-right,0,,FILL 0/1: 2 of 4 at this position succeeded
+eval_mixed_smooth,0,bottom-left,1,, 3 of 4 at this position succeeded
+eval_mixed_smooth,1,bottom-left,1,, 3 of 4 at this position succeeded
+eval_mixed_smooth,2,bottom-left,0,, 3 of 4 at this position succeeded
+eval_mixed_smooth,3,bottom-left,1,, 3 of 4 at this position succeeded
+eval_mixed_smooth,4,bottom-right,1,, 2 of 4 at this position succeeded
+eval_mixed_smooth,5,bottom-right,1,, 2 of 4 at this position succeeded
+eval_mixed_smooth,6,bottom-right,0,, 2 of 4 at this position succeeded
+eval_mixed_smooth,7,bottom-right,0,, 2 of 4 at this position succeeded
 eval_mixed_smooth,8,mid-left,1,auto: 4/4 at position,
 eval_mixed_smooth,9,mid-left,1,auto: 4/4 at position,
 eval_mixed_smooth,10,mid-left,1,auto: 4/4 at position,
@@ -39,35 +39,91 @@ eval_mixed_smooth,12,mid-right,1,auto: 4/4 at position,
 eval_mixed_smooth,13,mid-right,1,auto: 4/4 at position,
 eval_mixed_smooth,14,mid-right,1,auto: 4/4 at position,
 eval_mixed_smooth,15,mid-right,1,auto: 4/4 at position,
-eval_mixed_smooth,16,top-left,1,,FILL 0/1: 2 of 4 at this position succeeded
-eval_mixed_smooth,17,top-left,1,,FILL 0/1: 2 of 4 at this position succeeded
-eval_mixed_smooth,18,top-left,0,,FILL 0/1: 2 of 4 at this position succeeded
-eval_mixed_smooth,19,top-left,0,,FILL 0/1: 2 of 4 at this position succeeded
-eval_mixed_smooth,20,top-right,0,,FILL 0/1: 1 of 4 at this position succeeded
-eval_mixed_smooth,21,top-right,0,,FILL 0/1: 1 of 4 at this position succeeded
-eval_mixed_smooth,22,top-right,1,,FILL 0/1: 1 of 4 at this position succeeded
-eval_mixed_smooth,23,top-right,0,,FILL 0/1: 1 of 4 at this position succeeded
-eval_recovery_smooth,0,bottom-left,0,,FILL 0/1: 1 of 4 at this position succeeded
-eval_recovery_smooth,1,bottom-left,0,,FILL 0/1: 1 of 4 at this position succeeded
-eval_recovery_smooth,2,bottom-left,1,,FILL 0/1: 1 of 4 at this position succeeded
-eval_recovery_smooth,3,bottom-left,0,,FILL 0/1: 1 of 4 at this position succeeded
-eval_recovery_smooth,4,bottom-right,1,,FILL 0/1: 1 of 4 at this position succeeded
-eval_recovery_smooth,5,bottom-right,0,,FILL 0/1: 1 of 4 at this position succeeded
-eval_recovery_smooth,6,bottom-right,0,,FILL 0/1: 1 of 4 at this position succeeded
-eval_recovery_smooth,7,bottom-right,0,,FILL 0/1: 1 of 4 at this position succeeded
+eval_mixed_smooth,16,top-left,1,, 2 of 4 at this position succeeded
+eval_mixed_smooth,17,top-left,1,, 2 of 4 at this position succeeded
+eval_mixed_smooth,18,top-left,0,, 2 of 4 at this position succeeded
+eval_mixed_smooth,19,top-left,0,, 2 of 4 at this position succeeded
+eval_mixed_smooth,20,top-right,0,, 1 of 4 at this position succeeded
+eval_mixed_smooth,21,top-right,0,, 1 of 4 at this position succeeded
+eval_mixed_smooth,22,top-right,1,, 1 of 4 at this position succeeded
+eval_mixed_smooth,23,top-right,0,, 1 of 4 at this position succeeded
+eval_recovery_smooth,0,bottom-left,0,, 1 of 4 at this position succeeded
+eval_recovery_smooth,1,bottom-left,0,, 1 of 4 at this position succeeded
+eval_recovery_smooth,2,bottom-left,1,, 1 of 4 at this position succeeded
+eval_recovery_smooth,3,bottom-left,0,, 1 of 4 at this position succeeded
+eval_recovery_smooth,4,bottom-right,1,, 1 of 4 at this position succeeded
+eval_recovery_smooth,5,bottom-right,0,, 1 of 4 at this position succeeded
+eval_recovery_smooth,6,bottom-right,0,, 1 of 4 at this position succeeded
+eval_recovery_smooth,7,bottom-right,0,, 1 of 4 at this position succeeded
 eval_recovery_smooth,8,mid-left,0,auto: 0/4 at position,
 eval_recovery_smooth,9,mid-left,0,auto: 0/4 at position,
 eval_recovery_smooth,10,mid-left,0,auto: 0/4 at position,
 eval_recovery_smooth,11,mid-left,0,auto: 0/4 at position,
-eval_recovery_smooth,12,mid-right,0,,FILL 0/1: 2 of 4 at this position succeeded
-eval_recovery_smooth,13,mid-right,0,,FILL 0/1: 2 of 4 at this position succeeded
-eval_recovery_smooth,14,mid-right,1,,FILL 0/1: 2 of 4 at this position succeeded
-eval_recovery_smooth,15,mid-right,1,,FILL 0/1: 2 of 4 at this position succeeded
+eval_recovery_smooth,12,mid-right,0,, 2 of 4 at this position succeeded
+eval_recovery_smooth,13,mid-right,0,, 2 of 4 at this position succeeded
+eval_recovery_smooth,14,mid-right,1,, 2 of 4 at this position succeeded
+eval_recovery_smooth,15,mid-right,1,, 2 of 4 at this position succeeded
 eval_recovery_smooth,16,top-left,1,auto: 4/4 at position,
 eval_recovery_smooth,17,top-left,1,auto: 4/4 at position,
 eval_recovery_smooth,18,top-left,1,auto: 4/4 at position,
 eval_recovery_smooth,19,top-left,1,auto: 4/4 at position,
-eval_recovery_smooth,20,top-right,0,,FILL 0/1: 2 of 4 at this position succeeded
-eval_recovery_smooth,21,top-right,1,,FILL 0/1: 2 of 4 at this position succeeded
-eval_recovery_smooth,22,top-right,1,,FILL 0/1: 2 of 4 at this position succeeded
-eval_recovery_smooth,23,top-right,0,,FILL 0/1: 2 of 4 at this position succeeded
+eval_recovery_smooth,20,top-right,0,, 2 of 4 at this position succeeded
+eval_recovery_smooth,21,top-right,1,, 2 of 4 at this position succeeded
+eval_recovery_smooth,22,top-right,1,, 2 of 4 at this position succeeded
+eval_recovery_smooth,23,top-right,0,, 2 of 4 at this position succeeded
+eval_expert70_smooth,0,bottom-left,1,auto: 4/4 at position,
+eval_expert70_smooth,1,bottom-left,1,auto: 4/4 at position,
+eval_expert70_smooth,2,bottom-left,1,auto: 4/4 at position,
+eval_expert70_smooth,3,bottom-left,1,auto: 4/4 at position,
+eval_expert70_smooth,4,bottom-right,0,auto: 0/4 at position,
+eval_expert70_smooth,5,bottom-right,0,auto: 0/4 at position,
+eval_expert70_smooth,6,bottom-right,0,auto: 0/4 at position,
+eval_expert70_smooth,7,bottom-right,0,auto: 0/4 at position,
+eval_expert70_smooth,8,mid-left,1,auto: 4/4 at position,
+eval_expert70_smooth,9,mid-left,1,auto: 4/4 at position,
+eval_expert70_smooth,10,mid-left,1,auto: 4/4 at position,
+eval_expert70_smooth,11,mid-left,1,auto: 4/4 at position,
+eval_expert70_smooth,12,mid-right,1,, 3 of 4 at this position succeeded
+eval_expert70_smooth,13,mid-right,1,, 3 of 4 at this position succeeded
+eval_expert70_smooth,14,mid-right,1,, 3 of 4 at this position succeeded
+eval_expert70_smooth,15,mid-right,0,, 3 of 4 at this position succeeded
+eval_expert70_smooth,16,top-left,1,auto: 4/4 at position,
+eval_expert70_smooth,17,top-left,1,auto: 4/4 at position,
+eval_expert70_smooth,18,top-left,1,auto: 4/4 at position,
+eval_expert70_smooth,19,top-left,1,auto: 4/4 at position,
+eval_expert70_smooth,20,top-right,0,,2 of 4 at this position succeeded
+eval_expert70_smooth,21,top-right,1,,2 of 4 at this position succeeded
+eval_expert70_smooth,22,top-right,0,,2 of 4 at this position succeeded
+eval_expert70_smooth,23,top-right,1,,2 of 4 at this position succeeded
+edge_mixed,0,right-bottom,1,auto: 8/8 at position,
+edge_mixed,1,right-bottom,1,auto: 8/8 at position,
+edge_mixed,2,right-bottom,1,auto: 8/8 at position,
+edge_mixed,3,right-bottom,1,auto: 8/8 at position,
+edge_mixed,4,right-bottom,1,auto: 8/8 at position,
+edge_mixed,5,right-bottom,1,auto: 8/8 at position,
+edge_mixed,6,right-bottom,1,auto: 8/8 at position,
+edge_mixed,7,right-bottom,1,auto: 8/8 at position,
+edge_mixed,8,right-top,0,, 4 of 8 at this position succeeded
+edge_mixed,9,right-top,0,, 4 of 8 at this position succeeded
+edge_mixed,10,right-top,1,, 4 of 8 at this position succeeded
+edge_mixed,11,right-top,1,, 4 of 8 at this position succeeded
+edge_mixed,12,right-top,0,, 4 of 8 at this position succeeded
+edge_mixed,13,right-top,0,, 4 of 8 at this position succeeded
+edge_mixed,14,right-top,1,, 4 of 8 at this position succeeded
+edge_mixed,15,right-top,1,, 4 of 8 at this position succeeded
+edge_control,0,right-bottom,0,, 2 of 8 at this position succeeded
+edge_control,1,right-bottom,0,, 2 of 8 at this position succeeded
+edge_control,2,right-bottom,0,, 2 of 8 at this position succeeded
+edge_control,3,right-bottom,0,, 2 of 8 at this position succeeded
+edge_control,4,right-bottom,1,, 2 of 8 at this position succeeded
+edge_control,5,right-bottom,1,, 2 of 8 at this position succeeded
+edge_control,6,right-bottom,0,, 2 of 8 at this position succeeded
+edge_control,7,right-bottom,0,, 2 of 8 at this position succeeded
+edge_control,8,right-top,0,auto: 0/8 at position,
+edge_control,9,right-top,0,auto: 0/8 at position,
+edge_control,10,right-top,0,auto: 0/8 at position,
+edge_control,11,right-top,0,auto: 0/8 at position,
+edge_control,12,right-top,0,auto: 0/8 at position,
+edge_control,13,right-top,0,auto: 0/8 at position,
+edge_control,14,right-top,0,auto: 0/8 at position,
+edge_control,15,right-top,0,auto: 0/8 at position,

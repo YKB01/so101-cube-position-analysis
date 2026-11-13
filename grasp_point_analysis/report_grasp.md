@@ -50,11 +50,18 @@ Expert data centre (mean cube position of 50 expert episodes): (381.3, 211.9) px
 | eval_expert_smooth   |  24 | 0.39 [0.35, 0.44]  | 0.31 [0.27, 0.34]  |                 20.7 |                   23.1 |                 0.96 | 100%            |
 | eval_mixed_smooth    |  24 | 0.70 [0.61, 0.79]  | 0.50 [0.44, 0.56]  |                 16.4 |                   16   |                 0.78 | 96%             |
 | eval_recovery_smooth |  24 | 0.72 [0.57, 0.87]  | 0.56 [0.37, 0.75]  |                 17.7 |                   14.4 |                 0.41 | 75%             |
+| eval_expert70_smooth |  24 | 0.61 [0.53, 0.69]  | 0.60 [0.49, 0.71]  |                 18   |                   18.1 |                 0.66 | 83%             |
 
 ### Per test position
 
 | dataset              | position     |   n |   mean_err |   mean_err_x |   mean_err_y |   mean_cos_to_centre |
 |:---------------------|:-------------|----:|-----------:|-------------:|-------------:|---------------------:|
+| eval_expert70_smooth | top-left     |   4 |      29.6  |        10.78 |        27.46 |                 0.99 |
+| eval_expert70_smooth | mid-left     |   4 |      18.71 |         6.07 |        17.62 |                 0.81 |
+| eval_expert70_smooth | bottom-left  |   4 |       9.09 |        -1.26 |         8.33 |                -0.71 |
+| eval_expert70_smooth | top-right    |   4 |      22.38 |        -6.43 |        21.14 |                 0.98 |
+| eval_expert70_smooth | mid-right    |   4 |      13.75 |       -12.31 |         5.36 |                 0.97 |
+| eval_expert70_smooth | bottom-right |   4 |      14.53 |       -13.71 |        -3.19 |                 0.91 |
 | eval_expert_smooth   | top-left     |   4 |      27.11 |         7.54 |        25.69 |                 0.97 |
 | eval_expert_smooth   | mid-left     |   4 |      13.82 |         2.8  |        13.5  |                 0.78 |
 | eval_expert_smooth   | bottom-left  |   4 |       6.3  |         4.86 |        -3.99 |                 1    |
@@ -74,10 +81,27 @@ Expert data centre (mean cube position of 50 expert episodes): (381.3, 211.9) px
 | eval_recovery_smooth | mid-right    |   4 |      12.16 |        -9.94 |        -1.42 |                 0.59 |
 | eval_recovery_smooth | bottom-right |   4 |      37.36 |       -30.58 |       -21.25 |                 1    |
 
+### Horizontal aim error (mean err_x = aim x - cube x, px) by position, all four models
+
+Positive = aim to the right of the cube, negative = to the left. Right-side positions first.
+
+| position     |   expert |   mixed |   recovery-only |   control (expert 70) |
+|:-------------|---------:|--------:|----------------:|----------------------:|
+| mid-right    |    -18.9 |    -6.7 |            -9.9 |                 -12.3 |
+| bottom-right |    -22.7 |   -10.3 |           -30.6 |                 -13.7 |
+| top-right    |    -15   |    -4.1 |           -14.5 |                  -6.4 |
+| top-left     |      7.5 |    12.2 |            -4.4 |                  10.8 |
+| mid-left     |      2.8 |     0.3 |            -8.3 |                   6.1 |
+| bottom-left  |      4.9 |     2.5 |           -12   |                  -1.3 |
+
+Full table: `grasp_point_analysis/mean_err_x_by_position.csv`.
+
 ## Success vs. failure
 
 | dataset              |   success |   n |   mean_err |   median_err |   mean_cos_to_centre |
 |:---------------------|----------:|----:|-----------:|-------------:|---------------------:|
+| eval_expert70_smooth |         0 |   7 |      17.75 |        18.8  |                 0.95 |
+| eval_expert70_smooth |         1 |  17 |      18.12 |        17.34 |                 0.54 |
 | eval_expert_smooth   |         0 |  18 |      21.79 |        23.49 |                 1    |
 | eval_expert_smooth   |         1 |   6 |      17.61 |        15    |                 0.84 |
 | eval_mixed_smooth    |         0 |   8 |      21.71 |        25.97 |                 0.95 |

@@ -65,3 +65,23 @@ mixed model (expert 50 + recovery 20): same baseline checkpoint, 5,000 steps, ba
   Result and criteria: `right_side_test_analysis/report_right_side.md`.
 
 Pixel distances are image distances, not distances on the table.
+
+## Control-model aim analysis and lateral correction before the grasp
+
+Both analyses reuse the grasp-frame rule and the "joint angles -> cube pixel position" regression of
+`analyze_grasp_points.py` (`grasp_point_analysis/expert_regression.csv`).
+
+- **Four models side by side** (`analyze_grasp_points.py`): the control model's standard evaluation
+  (`eval_expert70_smooth`, expert 50 + new expert 20) was added next to expert / mixed / recovery-only. Its
+  first-frame cube positions are in `grasp_point_analysis/extra_cube_positions.csv` (assigned to the nearest
+  standard test position; `test_positions.csv` is unchanged). Results of the other three models are unchanged.
+  New: `grasp_point_analysis/mean_err_x_by_position.csv`, four-panel `fig1_aim_arrows.png`.
+- **`success.csv`** now also has rows for the control model's standard evaluation and for the two right-side
+  extra-test datasets (`edge_mixed`, `edge_control`). `python analyze_grasp_points.py --add-success-rows` appends
+  rows for datasets that are not in the file yet (existing rows untouched); blank cells are treated as unknown and
+  never replaced by placeholders.
+- **Lateral correction before the grasp** (`analyze_correction.py` -> `correction_analysis/`):
+  `--stage curves` plots arm speed and shoulder_pan before the grasp (used to choose the rule: the end of the
+  approach is the first time after the speed peak that the arm speed stays below 20 units/s for 5 frames);
+  `--stage metrics` computes per-episode metrics (`correction_metrics.csv`), summary tables, figures C/D/E, tests
+  (Mann-Whitney U with rank-biserial effect size, threshold sensitivity) and `report_correction.md`.

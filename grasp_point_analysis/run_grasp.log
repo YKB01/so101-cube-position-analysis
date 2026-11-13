@@ -5,8 +5,11 @@ INFO LOO error: mean 4.6 px, median 4.2, max 10.4 | MAE x 3.0 y 2.8 | baseline m
 INFO eval_expert_smooth: grasp detected in 24/24
 INFO eval_mixed_smooth: grasp detected in 24/24
 INFO eval_recovery_smooth: grasp detected in 24/24
-INFO loaded success.csv: 72/72 eval episodes with a value
+INFO eval_expert70_smooth: grasp detected in 24/24
+INFO loaded success.csv: 128/128 episodes with a value
+INFO datasets with complete success labels: ['edge_control', 'edge_mixed', 'eval_expert70_smooth', 'eval_expert_smooth', 'eval_mixed_smooth', 'eval_recovery_smooth']
 INFO eval_expert_smooth: slope x 0.39, slope y 0.31, mean err 20.7 px, mean cos_to_centre 0.96
 INFO eval_mixed_smooth: slope x 0.70, slope y 0.50, mean err 16.4 px, mean cos_to_centre 0.78
 INFO eval_recovery_smooth: slope x 0.72, slope y 0.56, mean err 17.7 px, mean cos_to_centre 0.41
+INFO eval_expert70_smooth: slope x 0.61, slope y 0.60, mean err 18.0 px, mean cos_to_centre 0.66
 INFO done: /home/ykb/cube_position_analysis/grasp_point_analysis
