@@ -1,0 +1,13 @@
+{
+  "nonce": "d4c5cfcf97ac26388c375a6a46951202",
+  "key": {
+    "B": {
+      "model": "R",
+      "checkpoint": "/home/ykb/Checkpoints/act_red_cube_mixed_hil_ft_20261015_150904/checkpoints/005000/pretrained_model"
+    },
+    "A": {
+      "model": "C",
+      "checkpoint": "/home/ykb/Checkpoints/act_red_cube_expert50_expert20_ft5000/checkpoints/005000/pretrained_model"
+    }
+  }
+}

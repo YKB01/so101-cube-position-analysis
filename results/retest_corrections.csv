@@ -1,0 +1,2 @@
+trial_id,final_attempt,outcome,failure_type,excluded_attempts,reason
+T36,1,fail,edge_not_grasped,2,"Attempt 1 ran the full 30 s and timed out (failure) but no outcome was recorded; the trial was then redone and attempt 2 was recorded as success. A redo is only allowed for interruptions unrelated to the model, so the final result of T36 is attempt 1 (failure; timeout after repeated edge misses). Attempt 2 is a protocol deviation and is excluded from the primary analysis. Operator error confirmed by the operator."

@@ -1,0 +1,7 @@
+metric,n_R,n_C,median_R,median_C,p,rank_biserial
+closes (addendum 01),24,24,2.0000,1.0000,0.0021,0.4340
+first grasp time (s),24,24,7.7333,6.4000,0.0000,0.7309
+pan correction before grasp (px),24,23,3.9453,0.0000,0.0000,0.9529
+correction time (s),24,23,1.1500,0.4000,0.0000,0.7736
+aim error x at grasp (px),24,24,-9.6249,-3.4227,0.0000,-0.8229
+aim error x at reach end (px),23,23,-10.4998,-3.0378,0.0000,-0.9509

@@ -1,0 +1,50 @@
+trial_id,attempt,outcome,failure_type,note,timestamp_unix
+T01,1,success,,,1794631514.552
+T02,1,interrupted,,,1794631630.395
+T02,2,success,,first grab failed retried once,1794631753.108
+T03,1,success,,first grab failed retried once,1794631860.611
+T04,1,success,,first grab failed making the cube go left retried once,1794631967.765
+T05,1,success,,success with one try,1794632085.939
+T06,1,success,,success in one trial,1794632192.396
+T07,1,success,,success in one trail,1794632291.345
+T08,1,fail,edge_not_grasped,retried third time grasped but out of time,1794632570.726
+T09,1,success,,success in one trial,1794632822.786
+T10,1,success,,success in one trial,1794633087.836
+T11,1,success,,success in one trial,1794633184.827
+T12,1,success,,success in one trial,1794633266.515
+T13,1,success,,success in one trial,1794633345.172
+T14,1,success,,success in one trial,1794633422.958
+T15,1,success,,success in one trial,1794633504.933
+T16,1,success,,success in one trial,1794633579.531
+T17,1,fail,edge_not_grasped,,1794633688.915
+T18,1,fail,edge_not_grasped,,1794633796.905
+T19,1,fail,edge_not_grasped,,1794633924.606
+T20,1,success,,sucess in one trial,1794634033.999
+T21,1,fail,dropped_after_grasp,,1794634119.410
+T22,1,success,,success in one trial,1794634205.500
+T23,1,success,,success in one,1794634295.916
+T24,1,fail,dropped_after_grasp,,1794634390.159
+T25,1,success,,success in one,1794634480.956
+T26,1,success,,success in one,1794634578.077
+T27,1,success,,success in one,1794634663.952
+T28,1,success,,success in one,1794634741.493
+T29,1,fail,edge_not_grasped,,1794634826.603
+T30,1,success,,success in one,1794634912.469
+T31,1,success,,success in one,1794634997.538
+T32,1,success,,success in one,1794635093.607
+T33,1,fail,edge_not_grasped,,1794635182.822
+T34,1,success,,success in one,1794635296.702
+T35,1,success,,1 trial,1794635375.526
+T36,2,success,,1 trial,1794635601.863
+T37,1,success,,1 trial,1794635687.371
+T38,1,success,,1 trial,1794635777.646
+T39,1,success,,success in 2 trials,1794635867.246
+T40,1,success,,1 trial,1794635950.996
+T41,1,success,,1 trial,1794636033.572
+T42,1,success,,success in 2 trials,1794636134.237
+T43,1,success,,success in 2 trials,1794636241.573
+T44,1,success,,1 trial,1794636331.274
+T45,1,success,,1 trial,1794636424.671
+T46,1,fail,cube_pushed_away,,1794636509.248
+T47,1,fail,edge_not_grasped,,1794636596.553
+T48,1,success,,1 trial,1794636690.147

@@ -1,0 +1,4 @@
+failure_type,R,C
+cube_pushed_away,1,0
+dropped_after_grasp,2,0
+edge_not_grasped,6,2

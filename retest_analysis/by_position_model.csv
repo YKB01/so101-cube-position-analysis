@@ -1,0 +1,7 @@
+position_id,model,n,success,closes_mean,corr_px_med
+P1,C,8,7,1.12,0.0
+P1,R,8,3,1.62,4.64
+P2,C,8,8,1.0,-0.23
+P2,R,8,4,1.88,5.57
+P3,C,8,7,1.38,0.0
+P3,R,8,8,1.25,1.39

@@ -1,0 +1,48 @@
+INFO success tests:
+                                                    analysis  R_success  R_n  R_rate  C_success  C_n  C_rate  diff_R_minus_C  diff_ci_lo  diff_ci_hi  fisher_odds_ratio  fisher_p_two_sided
+      PRIMARY: pooled 3 positions (T36 = failure, attempt 1)         15   24   0.625         22   24   0.917          -0.292      -0.499      -0.052              0.152               0.036
+sensitivity: T36 as recorded originally (attempt 2, success)         16   24   0.667         22   24   0.917          -0.250      -0.458      -0.017              0.182               0.072
+                                    exploratory: position P1          3    8   0.375          7    8   0.875          -0.500      -0.759      -0.029              0.086               0.119
+                                    exploratory: position P2          4    8   0.500          8    8   1.000          -0.500      -0.785      -0.068              0.000               0.077
+                                    exploratory: position P3          8    8   1.000          7    8   0.875           0.125      -0.215       0.471                inf               1.000
+INFO failure types:
+model                R  C
+failure_type             
+cube_pushed_away     1  0
+dropped_after_grasp  2  0
+edge_not_grasped     6  2
+INFO secondary:
+                          metric  n_R  n_C  median_R  median_C     p  rank_biserial
+            closes (addendum 01)   24   24     2.000     1.000 0.002          0.434
+            first grasp time (s)   24   24     7.733     6.400 0.000          0.731
+pan correction before grasp (px)   24   23     3.945     0.000 0.000          0.953
+             correction time (s)   24   23     1.150     0.400 0.000          0.774
+       aim error x at grasp (px)   24   24    -9.625    -3.423 0.000         -0.823
+   aim error x at reach end (px)   23   23   -10.500    -3.038 0.000         -0.951
+INFO closes:
+n_gripper_closes   1   2  3
+model                      
+C                 21   2  1
+R                 10  14  0
+INFO returned home:
+       sum  count
+model            
+C       22     24
+R       10     24
+INFO closes by outcome:
+               mean  median  count
+model success                     
+C     0        2.50     2.5      2
+      1        1.05     1.0     22
+R     0        2.00     2.0      9
+      1        1.33     1.0     15
+INFO by position:
+                   n  success  closes_mean  corr_px_med
+position_id model                                      
+P1          C      8        7         1.12         0.00
+            R      8        3         1.62         4.64
+P2          C      8        8         1.00        -0.23
+            R      8        4         1.88         5.57
+P3          C      8        7         1.38         0.00
+            R      8        8         1.25         1.39
+INFO done
