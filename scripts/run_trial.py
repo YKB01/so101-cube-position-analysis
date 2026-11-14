@@ -15,8 +15,8 @@ What it does
      (not pushed), chunks.npz (full action chunk of every step + ensembled action), meta.json
   5. asks for the outcome and appends it to results/retest_outcomes.csv
 
-Keys during the run: Right arrow = end the episode early; Esc / Ctrl-C = interrupt (partial data kept, redo as a
-new attempt). Do NOT use Left arrow (it discards the episode without a trace).
+Keys during the run (press them in THIS terminal): Right arrow / e / n / Enter = end the episode early (saved
+normally); Ctrl-C = interrupt (partial data kept, redo as a new attempt). Press only once; a second Ctrl-C forces exit. Do NOT use Left arrow (it discards the episode without a trace).
 Stop scripts/place_cube_overlay.py before running (one process at a time can use the camera).
 """
 from __future__ import annotations
@@ -26,7 +26,12 @@ import csv
 import json
 import os
 import re
+import select
+import signal
 import subprocess
+import termios
+import threading
+import tty
 import sys
 import time
 from pathlib import Path
@@ -47,6 +52,50 @@ ROBOT_ARGS = ["--robot.type=so101_follower", "--robot.port=/dev/ttyACM0", "--rob
               "warmup_s: 10, fourcc: 'MJPG'}}"]
 TASK = "Pick up the red cube and put it into the box"
 FAIL_TYPES = {"1": "edge_not_grasped", "2": "arm_cannot_reach", "3": "dropped_after_grasp", "4": "cube_pushed_away"}
+
+
+class EarlyEnd:
+    """Reads the terminal of this (parent) process; Right arrow / e / n / Enter sends ONE SIGINT to the child,
+    which LeRobot treats as a clean shutdown (episode saved). Independent of LeRobot's own key listener."""
+    def __init__(self, proc):
+        self.proc, self.pressed, self._run, self._old, self._t = proc, False, False, None, None
+
+    def start(self):
+        if not sys.stdin.isatty():
+            return
+        fd = sys.stdin.fileno()
+        self._old = termios.tcgetattr(fd)
+        termios.tcflush(fd, termios.TCIFLUSH)
+        tty.setcbreak(fd)
+        self._run = True
+        self._t = threading.Thread(target=self._loop, daemon=True); self._t.start()
+
+    def _read(self, timeout):
+        r, _, _ = select.select([sys.stdin.fileno()], [], [], timeout)
+        return os.read(sys.stdin.fileno(), 1).decode(errors="ignore") if r else ""
+
+    def _loop(self):
+        while self._run:
+            ch = self._read(0.1)
+            if not ch:
+                continue
+            hit = ch in ("e", "n", "\r", "\n")
+            if ch == "\x1b":                                  # arrow keys arrive as ESC [ C (right)
+                hit = self._read(0.05) in ("[", "O") and self._read(0.05) == "C"
+            if hit and not self.pressed and self.proc.poll() is None:
+                self.pressed = True
+                print("  early end requested (saving the episode)...", flush=True)
+                self.proc.send_signal(signal.SIGINT)
+
+    def stop(self):
+        self._run = False
+        if self._t:
+            self._t.join(timeout=0.5)
+        if self._old is not None:
+            fd = sys.stdin.fileno()
+            termios.tcsetattr(fd, termios.TCSADRAIN, self._old)
+            termios.tcflush(fd, termios.TCIFLUSH)
+            self._old = None
 
 
 def lookup(trial_id: str) -> tuple[dict, str]:
@@ -139,11 +188,12 @@ def main():
     scrub = sorted(set(scrub), key=len, reverse=True)
     started = time.time()
     print(f"{tid} (position {row['position_id']}), attempt {k}: starting; robot moves after the policy is loaded.\n"
-          f"Right arrow = end early, Esc/Ctrl-C = interrupt. Full log: {outdir / 'run.log'}")
+          f"Right arrow / e = end early (saved), Ctrl-C = interrupt. Full log: {outdir / 'run.log'}")
     env = dict(os.environ, RT_ARGS=json.dumps(args), PYTHONUNBUFFERED="1")
     proc = subprocess.Popen([sys.executable, "-u", str(Path(__file__).resolve()), "--child", str(outdir)],
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env, cwd=ROOT)
     pat = re.compile("|".join(re.escape(s) for s in scrub))
+    early = EarlyEnd(proc); early.start()
     with open(outdir / "run.log", "w") as log:
         while True:
             try:
@@ -157,12 +207,13 @@ def main():
             if re.search(r"ERROR|Traceback|Exception|Record loop is running slower", line):
                 print("  ", line.rstrip())
     rc = proc.wait()
+    early.stop()
     ended = time.time()
     m = re.search(r"Dataset ready: (\S+)", (outdir / "run.log").read_text())
     actual_repo = m.group(1) if m else repo_id          # LeRobot appends a timestamp to rollout dataset names
     summ = json.loads((outdir / "chunk_summary.json").read_text()) if (outdir / "chunk_summary.json").exists() else {}
     meta = dict(trial_id=tid, position_id=row["position_id"], attempt=k, dataset_repo_id=actual_repo,
-                started_unix=started, ended_unix=ended, return_code=rc, placement=pl, inference=INFERENCE,
+                started_unix=started, ended_unix=ended, early_end_key=early.pressed, return_code=rc, placement=pl, inference=INFERENCE,
                 episode_time_s=EPISODE_TIME_S, chunks=summ)
     (outdir / "meta.json").write_text(json.dumps(meta, indent=2, default=str))
     print(f"finished (return code {rc}); recorded {summ.get('n_steps', 0)} policy steps with full action chunks.")
