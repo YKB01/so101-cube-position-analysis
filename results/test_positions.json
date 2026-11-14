@@ -1,0 +1,134 @@
+{
+  "coordinate_system": "front camera 640x480 px, cube centre in first frame",
+  "thresholds": {
+    "GRID_PX": 2.0,
+    "D_MIN_PX": 3.0,
+    "D_MAX_PX": 10.0,
+    "D_DIFF_MAX_PX": 1.5,
+    "MIN_SEP_PX": 15.0,
+    "TIE_ROUND_PX": 0.01
+  },
+  "right_side_definition": {
+    "x_split": 381.69,
+    "right_standard_positions": [
+      "top-right",
+      "mid-right",
+      "bottom-right"
+    ],
+    "segment_y_edges": [
+      188.76,
+      212.73
+    ],
+    "segment_centres": {
+      "top": [
+        401.03,
+        179.22
+      ],
+      "mid": [
+        401.84,
+        198.31
+      ],
+      "bottom": [
+        405.59,
+        227.15
+      ]
+    },
+    "segment_to_standard_row": {
+      "top": "top-right",
+      "mid": "mid-right",
+      "bottom": "bottom-right"
+    }
+  },
+  "training_sets": {
+    "R": "expert 50 + recovery 20 (9 recovery positions = first still frame before grasp)",
+    "C": "expert 50 + new expert 20"
+  },
+  "n_candidates_total": 31330,
+  "n_feasible_total": 55,
+  "exclusion_counts": {
+    "top": {
+      "sequential": {
+        "candidates_in_segment": 12350,
+        "after_2_hull_R_and_C": 57,
+        "after_3a_distance_3_to_10px": 39,
+        "after_3b_|dR-dC|<=1.5": 31,
+        "after_4_>=15px_from_existing": 12
+      },
+      "excluded_by_each_condition_alone": {
+        "fails_2_hull_R_and_C": 12293,
+        "fails_3a_distance_3_to_10px": 12265,
+        "fails_3b_|dR-dC|<=1.5": 10801,
+        "fails_4_>=15px_from_existing": 168
+      }
+    },
+    "mid": {
+      "sequential": {
+        "candidates_in_segment": 1560,
+        "after_2_hull_R_and_C": 155,
+        "after_3a_distance_3_to_10px": 80,
+        "after_3b_|dR-dC|<=1.5": 68,
+        "after_4_>=15px_from_existing": 15
+      },
+      "excluded_by_each_condition_alone": {
+        "fails_2_hull_R_and_C": 1405,
+        "fails_3a_distance_3_to_10px": 1444,
+        "fails_3b_|dR-dC|<=1.5": 1199,
+        "fails_4_>=15px_from_existing": 199
+      }
+    },
+    "bottom": {
+      "sequential": {
+        "candidates_in_segment": 17420,
+        "after_2_hull_R_and_C": 91,
+        "after_3a_distance_3_to_10px": 45,
+        "after_3b_|dR-dC|<=1.5": 44,
+        "after_4_>=15px_from_existing": 28
+      },
+      "excluded_by_each_condition_alone": {
+        "fails_2_hull_R_and_C": 17329,
+        "fails_3a_distance_3_to_10px": 17303,
+        "fails_3b_|dR-dC|<=1.5": 8295,
+        "fails_4_>=15px_from_existing": 188
+      }
+    }
+  },
+  "positions": [
+    {
+      "position_id": "P1",
+      "segment": "top",
+      "cx": 386.0,
+      "cy": 182.0,
+      "d_R": 7.477,
+      "d_C": 7.477,
+      "abs_dR_minus_dC": 0.0,
+      "n_feasible_in_segment": 12,
+      "n_tied_at_min": 11,
+      "nearest_existing_px": 15.28
+    },
+    {
+      "position_id": "P2",
+      "segment": "mid",
+      "cx": 394.0,
+      "cy": 212.0,
+      "d_R": 5.275,
+      "d_C": 5.275,
+      "abs_dR_minus_dC": 0.0,
+      "n_feasible_in_segment": 15,
+      "n_tied_at_min": 15,
+      "nearest_existing_px": 15.78
+    },
+    {
+      "position_id": "P3",
+      "segment": "bottom",
+      "cx": 390.0,
+      "cy": 230.0,
+      "d_R": 3.14,
+      "d_C": 3.14,
+      "abs_dR_minus_dC": 0.0,
+      "n_feasible_in_segment": 28,
+      "n_tied_at_min": 28,
+      "nearest_existing_px": 15.85
+    }
+  ],
+  "status": "complete"
+}
