@@ -1,0 +1,22 @@
+INFO recovery pre-grasp coverage (s): [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.8, 3.0, 3.0, 3.0, 3.0, 2.73, 3.0, 3.0]
+INFO common window = 2.73 s
+INFO summary:
+                                                    metric  expert_median  new_expert_median  recovery_median  p_recovery_vs_new_expert  p_recovery_vs_expert  p_new_expert_vs_expert
+                         Peak speed before grasp (units/s)        110.420            129.339           47.554                     0.000                 0.000                   0.025
+                               Slow phase before grasp (s)          1.367              0.950            0.500                     0.001                 0.000                   0.034
+                    Mean abs jerk before grasp (units/s^3)       1560.615           2343.863         2028.764                     0.208                 0.000                   0.000
+                           Peak speed, common 2.7 s window         93.935            123.204           47.554                     0.000                 0.000                   0.017
+                       Slow phase, common 2.7 s window (s)          1.250              0.800            0.500                     0.038                 0.000                   0.002
+                        Mean abs jerk, common 2.7 s window       1490.054           2370.062         2078.808                     0.379                 0.000                   0.000
+         Mean speed in the last 1 s before grasp (units/s)          5.944             15.332            9.912                     0.002                 0.026                   0.000
+               Peak speed in the 3 s after grasp (units/s)         63.973             64.461           68.210                     0.298                 0.097                   0.721
+                      Mean abs jerk in the 3 s after grasp       1525.073           1773.362         1886.775                     0.310                 0.000                   0.006
+                 Peak speed in the whole episode (units/s)        155.491            148.054          156.232                     0.091                 0.871                   0.008
+ Arm path length from episode start to grasp (joint units)        239.582            225.975           57.806                     0.000                 0.000                   0.083
+Arm path length in the last 3 s before grasp (joint units)        123.471            183.455           45.780                     0.000                 0.000                   0.003
+                             Pre-grasp coverage (s, max 3)          3.000              3.000            3.000                     0.163                 0.026                   1.000
+                      Time from episode start to grasp (s)          7.250              7.233            3.717                     0.000                 0.000                   0.785
+                                      Gripper closes (all)          2.000              2.000            2.000                     0.342                 1.000                   0.121
+                  Gripper closes (return-to-home excluded)          1.000              1.000            1.000                     0.342                 0.121                   1.000
+                                        Frames per episode        598.000            598.000          455.500                     0.000                 0.000                   0.548
+                        First-frame distance to start pose          6.311              8.228          216.574                     0.000                 0.000                   0.014
