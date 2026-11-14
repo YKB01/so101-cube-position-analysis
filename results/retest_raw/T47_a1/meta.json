@@ -1,0 +1,36 @@
+{
+  "trial_id": "T47",
+  "position_id": "P2",
+  "attempt": 1,
+  "dataset_repo_id": "YKB0123/rollout_retest_T47_a1_20261114_150914",
+  "started_unix": 1794636538.951443,
+  "ended_unix": 1794636596.5529346,
+  "early_end_key": false,
+  "return_code": 0,
+  "placement": {
+    "trial_id": "T47",
+    "position_id": "P2",
+    "target_x": 394.0,
+    "target_y": 212.0,
+    "measured_x": 394.6,
+    "measured_y": 211.7,
+    "dx": 0.6,
+    "dy": -0.3,
+    "dist": 0.67,
+    "timestamp_iso": "2026-11-14T15:08:54+09:00",
+    "timestamp_unix": 1794636534.755
+  },
+  "inference": {
+    "n_action_steps": 1,
+    "temporal_ensemble_coeff": 0.01
+  },
+  "episode_time_s": 30,
+  "chunks": {
+    "n_steps": 888,
+    "chunk_shape": [
+      100,
+      6
+    ],
+    "postproc_failed": 0
+  }
+}

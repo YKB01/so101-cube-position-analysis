@@ -1,0 +1,36 @@
+{
+  "trial_id": "T36",
+  "position_id": "P2",
+  "attempt": 2,
+  "dataset_repo_id": "YKB0123/rollout_retest_T36_a2_20261114_145247",
+  "started_unix": 1794635551.4933562,
+  "ended_unix": 1794635601.8632824,
+  "early_end_key": true,
+  "return_code": 0,
+  "placement": {
+    "trial_id": "T36",
+    "position_id": "P2",
+    "target_x": 394.0,
+    "target_y": 212.0,
+    "measured_x": 393.5,
+    "measured_y": 212.42,
+    "dx": -0.5,
+    "dy": 0.42,
+    "dist": 0.65,
+    "timestamp_iso": "2026-11-14T14:52:27+09:00",
+    "timestamp_unix": 1794635547.086
+  },
+  "inference": {
+    "n_action_steps": 1,
+    "temporal_ensemble_coeff": 0.01
+  },
+  "episode_time_s": 30,
+  "chunks": {
+    "n_steps": 709,
+    "chunk_shape": [
+      100,
+      6
+    ],
+    "postproc_failed": 0
+  }
+}
