@@ -40,6 +40,13 @@ import pandas as pd
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
+PROTOCOLS = {   # --protocol: which pre-registered test is being run (files are kept separate)
+    "retest": dict(order="protocol/trial_order.csv", key="protocol/model_key.json", raw="results/retest_raw",
+                   outcomes="results/retest_outcomes.csv", placement="results/placement_log.csv", prefix="retest"),
+    "trunc": dict(order="protocol/trunc_trial_order.csv", key="protocol/trunc_model_key.json", raw="results/trunc_raw",
+                  outcomes="results/trunc_outcomes.csv", placement="results/trunc_placement_log.csv", prefix="trunc"),
+}
+ORDER_CSV, KEY_JSON, PREFIX = ROOT / "protocol/trial_order.csv", ROOT / "protocol/model_key.json", "retest"
 RAW = ROOT / "results/retest_raw"
 PRACTICE_CKPT = str(Path.home() / "Checkpoints/act_red_cube_50_100000")   # baseline, NOT one of the two test models
 OUTCOMES = ROOT / "results/retest_outcomes.csv"
@@ -99,12 +106,12 @@ class EarlyEnd:
 
 
 def lookup(trial_id: str) -> tuple[dict, str]:
-    order = pd.read_csv(ROOT / "protocol/trial_order.csv")
+    order = pd.read_csv(ORDER_CSV)
     row = order[order.trial_id == trial_id]
     if row.empty:
         sys.exit(f"unknown trial id {trial_id}")
     row = row.iloc[0].to_dict()
-    key = json.loads((ROOT / "protocol/model_key.json").read_text())["key"]
+    key = json.loads(KEY_JSON.read_text())["key"]
     return row, key[row["model_code"]]["checkpoint"]
 
 
@@ -145,10 +152,15 @@ def child_main(outdir: Path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("trial_id", nargs="?", help="T01..T48, or PRACTICE (baseline checkpoint, no guards/outcome)")
+    ap.add_argument("trial_id", nargs="?", help="T01..T48 (retest), U01..U32 (trunc), or PRACTICE (baseline checkpoint, no guards/outcome)")
+    ap.add_argument("--protocol", choices=list(PROTOCOLS), default="retest")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--child", type=Path, help=argparse.SUPPRESS)
     a = ap.parse_args()
+    global ORDER_CSV, KEY_JSON, PREFIX, RAW, OUTCOMES, PLACEMENT
+    cfg = PROTOCOLS[a.protocol]
+    ORDER_CSV, KEY_JSON, PREFIX = ROOT / cfg["order"], ROOT / cfg["key"], cfg["prefix"]
+    RAW, OUTCOMES, PLACEMENT = ROOT / cfg["raw"], ROOT / cfg["outcomes"], ROOT / cfg["placement"]
     if a.child:
         return child_main(a.child)
     tid = a.trial_id or sys.exit("trial_id required")
@@ -162,7 +174,7 @@ def main():
         row, ckpt = lookup(tid)
         prev = attempts(tid)
         k = len(prev) + 1
-        repo_id = f"{HF_USER}/rollout_retest_{tid}_a{k}"
+        repo_id = f"{HF_USER}/rollout_{PREFIX}_{tid}_a{k}"
         outdir = RAW / f"{tid}_a{k}"
 
     # ---- guards (not for PRACTICE) ---------------------------------------------------------------

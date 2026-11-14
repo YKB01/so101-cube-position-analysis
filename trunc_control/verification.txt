@@ -1,0 +1,7 @@
+merged: episodes 70, frames 38607, info total_frames 38607, total_episodes 70
+index contiguous: True; episode lengths match rows: True
+compared 38607 frames in 70 episodes (state, action, frame_index, timestamp, every decoded image): all identical
+LeRobotDataset loader, 60 random frames: identical
+stats.json observation.state mean vs data mean: max abs diff 0.0014
+stats.json state count [38607] (frames 38607)
+RESULT: PASS
