@@ -219,6 +219,7 @@ class Collector:
         self.leader_torque_on = False
         self.stack = contextlib.ExitStack()
         self.dry_rows: list[dict] = []
+        self.report_hook = None
 
     # ------------------------------------------------------------------------------------------- hardware
     def connect(self):
@@ -694,7 +695,7 @@ class Collector:
         self.phase = "align"
         tgt6 = np.asarray(tgt6, float)
         self.teleop.enable_torque(); self.leader_torque_on = True
-        retries = 0
+        retries, prev_emax = 0, None
         while True:
             cur = np.array([self.teleop.get_action()[k] for k in KEYS6], float)
             dur = max(c["align_min_s"], np.abs(tgt6 - cur).max() / c["align_speed_deg_s"])
@@ -716,10 +717,25 @@ class Collector:
                 raise
             lp = np.array([self.teleop.get_action()[k] for k in KEYS6], float)
             err = lp - tgt6
+            emax = float(np.abs(err).max())
             if log is not None:
-                log.append(dict(attempt=retries + 1, duration_s=dur, **{f"err_{k}": float(err[i]) for i, k in enumerate(KEYS6)}, err_max=float(np.abs(err).max())))
-            if np.abs(err).max() <= c["align_tol_deg"]:
+                log.append(dict(attempt=retries + 1, duration_s=dur, **{f"err_{k}": float(err[i]) for i, k in enumerate(KEYS6)}, err_max=emax,
+                                leader=lp.tolist(), target=tgt6.tolist()))
+                if self.report_hook is not None:
+                    self.report_hook()
+            if emax <= c["align_tol_deg"]:
                 return err, retries
+            worst = int(np.argmax(np.abs(err)))
+            print(f"   attempt {retries + 1}: leader - target per joint {np.round(err, 1).tolist()} deg (worst: {KEYS6[worst]} {err[worst]:+.1f}); tolerance {c['align_tol_deg']}", flush=True)
+            # stall: the error did not improve by >= 0.5 deg compared with the previous attempt -> the leader is blocked (table, joint limit, ...): stop pushing
+            if retries >= 1 and prev_emax is not None and emax > prev_emax - 0.5:
+                self.teleop.disable_torque(); self.leader_torque_on = False
+                self.wait_key(f"The leader is stalled at {KEYS6[worst]} (error {err[worst]:+.1f} deg, not improving): it is probably blocked (table / joint limit). Torque released. "
+                              f"[c] try again from scratch   [x] discard", ("c",), hold=True)
+                self.teleop.enable_torque(); self.leader_torque_on = True
+                retries, prev_emax = 0, None
+                continue
+            prev_emax = emax
             retries += 1
             if retries > c["align_max_retries"]:
                 self.wait_key(f"Leader did not reach the follower (max error {np.abs(err).max():.1f} deg > {c['align_tol_deg']}). [c] try again   [x] discard", ("c",), hold=True)
@@ -924,11 +940,15 @@ def _collector_methods():
             src = "given joints"
         else:
             import pandas as pd
-            Q = load_trial_states(c["align_pose"])
-            off = pd.read_csv(HERE / "rewind_offline/rewind_targets.csv").set_index("trial")
-            f = int(off.loc[c["align_pose"], "shallow_frame"])
+            trial, _, which = c["align_pose"].partition(":")
+            which = which or "deep"
+            Q = load_trial_states(trial)
+            if which == "shallow":
+                f = int(pd.read_csv(HERE / "rewind_offline/rewind_targets.csv").set_index("trial").loc[trial, "shallow_lead1s_frame"])
+            else:
+                f = int(pd.read_csv(HERE / "rewind_offline/phase0_deep_fix.csv").set_index("trial").loc[trial, "new_deep_frame"])
             arm = Q[f, :5]
-            src = f"shallow rewind target of {c['align_pose']} (frame {f})"
+            src = f"{which} rewind target of {trial} (frame {f})"
         arm = RC.clamp_arm(arm, p, c["joint_margin_deg"])
         return np.r_[arm, p["gripper_open_value"]], src
 
@@ -939,6 +959,8 @@ def _collector_methods():
         print(f"\nALIGN-ONLY test. Follower pose to hold: {np.round(tgt6, 1).tolist()} ({src}); "
               f"{np.abs(tgt6 - cur).max():.0f} deg away from the current pose (max over joints).", flush=True)
         report = dict(target_pose=tgt6.tolist(), source=src, start_pose=cur.tolist(), align_attempts=[])
+        save_report = lambda: (self.out / "align_only_report.json").write_text(json.dumps(report, indent=2))
+        save_report()
         if c["align_move_confirm"]:
             print("Check that the path is clear. [s] move the follower there   [q] quit", flush=True)
             while True:
@@ -962,9 +984,21 @@ def _collector_methods():
             self.sleep_to(t0)
         obs = self.get_obs(); fol = vec6(obs)
         report["follower_reached"] = dict(result=res, err_per_joint=(fol - tgt6).tolist())
+        save_report()
         print(f"follower at the pose ({res}); error per joint {np.round(fol - tgt6, 2).tolist()} deg", flush=True)
+        if res != "settled":
+            print("WARNING: the follower did not reach the pose (blocked, e.g. by the table?). It keeps pushing against the commanded pose. [c] continue with its measured pose   [q] quit", flush=True)
+            while True:
+                t0 = time.perf_counter(); ks = self.poll_keys(allow_discard=False, extra=("c", "q"))
+                if "q" in ks:
+                    return
+                if "c" in ks:
+                    break
+                self.send6(np.r_[fol[:5], tgt6[5]]); self.sleep_to(t0)     # stop pushing: command the measured pose
+            obs = self.get_obs(); fol = vec6(obs)
         # 2) align the leader to the follower's measured pose
-        log = []
+        log = report["align_attempts"]
+        self.report_hook = save_report
         try:
             err, retries = self.align_leader(fol, log)
         except Discard:
