@@ -138,3 +138,8 @@ Data layout note: the recorded right-side retest and C_trunc-test rollouts live 
 (one dataset per trial); the analysis scripts resolve them from there (`meta.json` still holds the original repo id).
 - `python scripts/verify_rewind_dataset.py <repo_id> [--segments] [--meta <rewind_meta.csv>]`: checks a dataset written by `collect_rewind.py` against the existing intervention dataset
   (features, fps, task, intervention column, timestamps, ranges, video decoding, sidecar metadata).
+
+## Lighting analysis (`lighting_analysis/`)
+Does the outdoor light (the room lights stay on, the window is at the right-rear of the camera) explain the 11/14 drift? `report_lighting.md` answers: how much the light changes, whether training and test
+conditions match, whether the truncation-session drift can be explained by it, and when to collect / whether to lock the camera. Scripts: `extract_first_frames.py` -> `global_stats.py` -> `region_stats.py` ->
+`analyze_time_behavior.py` -> `analyze_behavior_lighting.py`; policy sensitivity: `policy_sensitivity.py`, `start_sensitivity.py`, `exposure_state_test.py`. First frames are cached in `lighting_analysis/cache/` (not committed).

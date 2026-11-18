@@ -1,0 +1,68 @@
+Spearman correlations of behaviour with first-frame lighting (n = 16 or 24 per series; |rho| > 0.5 needed for p < 0.05 at n = 16):
+light                                     bg_sheet_right_gray  gray_mean  table_gray
+series                behaviour                                                     
+retest C              aim_err_x                          0.21      -0.10       -0.02
+                      first_grasp_time_s                 0.16       0.30        0.07
+                      onset_s                            0.08       0.23       -0.01
+                      speed10                           -0.18      -0.14       -0.14
+                      success                           -0.35      -0.37       -0.30
+retest R              aim_err_x                         -0.10      -0.10        0.08
+                      first_grasp_time_s                -0.11       0.06        0.21
+                      onset_s                            0.46       0.42        0.23
+                      speed10                           -0.33      -0.31        0.02
+                      success                           -0.07      -0.16       -0.16
+trunc session C       aim_err_x                         -0.49      -0.19       -0.52
+                      first_grasp_time_s                 0.02       0.14       -0.05
+                      onset_s                            0.26       0.45        0.21
+                      speed10                           -0.23      -0.41       -0.21
+                      success                            0.03       0.03       -0.03
+trunc session C_trunc aim_err_x                          0.19       0.29        0.09
+                      first_grasp_time_s                 0.61       0.59        0.52
+                      onset_s                            0.66       0.63        0.56
+                      speed10                           -0.39      -0.40       -0.31
+
+9 of 57 light-behaviour correlations have p < 0.05 (no multiplicity correction; about 3 expected by chance):
+               series               light          behaviour  n  spearman     p
+             retest R           gray_mean            onset_s 24     0.424 0.039
+             retest R bg_sheet_right_gray            onset_s 24     0.461 0.023
+      trunc session C          table_gray          aim_err_x 16    -0.524 0.037
+trunc session C_trunc           gray_mean            onset_s 16     0.631 0.009
+trunc session C_trunc           gray_mean first_grasp_time_s 16     0.592 0.016
+trunc session C_trunc          table_gray            onset_s 16     0.556 0.025
+trunc session C_trunc          table_gray first_grasp_time_s 16     0.517 0.040
+trunc session C_trunc bg_sheet_right_gray            onset_s 16     0.665 0.005
+trunc session C_trunc bg_sheet_right_gray first_grasp_time_s 16     0.611 0.012
+
+time of day against behaviour (same series):
+behaviour              aim_err_x  first_grasp_time_s  onset_s  speed10  success
+series                                                                         
+retest C                   -0.59                0.32     0.54     0.35     0.26
+retest R                   -0.58                0.43     0.21    -0.58    -0.33
+trunc session C            -0.62               -0.56    -0.39     0.37     0.38
+trunc session C_trunc      -0.89               -0.64    -0.55     0.72      NaN
+
+within-series (series mean removed) correlation, all 80 trials pooled:
+  gray_mean              vs speed10             : rho -0.38 (p 0.00, n 80)
+  gray_mean              vs first_grasp_time_s  : rho +0.33 (p 0.00, n 80)
+  gray_mean              vs aim_err_x           : rho -0.02 (p 0.85, n 80)
+  table_gray             vs speed10             : rho -0.26 (p 0.02, n 80)
+  table_gray             vs first_grasp_time_s  : rho +0.24 (p 0.03, n 80)
+  table_gray             vs aim_err_x           : rho -0.07 (p 0.53, n 80)
+  bg_sheet_right_gray    vs speed10             : rho -0.35 (p 0.00, n 80)
+  bg_sheet_right_gray    vs first_grasp_time_s  : rho +0.25 (p 0.03, n 80)
+  bg_sheet_right_gray    vs aim_err_x           : rho -0.02 (p 0.86, n 80)
+
+brightness of successful vs failed trials (median whole-frame gray / table gray):
+  retest C                 success n=22 table 115.3 gray 132.6 | fail n=2 table 118.0 gray 135.2 | MWU p(table)=0.18
+  retest R                 success n=15 table 115.1 gray 132.5 | fail n=9 table 115.2 gray 132.6 | MWU p(table)=0.47
+  trunc session C          success n=8 table 119.1 gray 135.0 | fail n=8 table 119.6 gray 136.2 | MWU p(table)=0.96
+  trunc session C_trunc    all fail (n=16)
+
+C_trunc trials that stand still at the start (motion onset > 4.77 s, the latest onset of any C or R trial): 9/16: ['U02', 'U03', 'U05', 'U08', 'U10', 'U11', 'U28', 'U29', 'U32']
+   gray_mean              stalled median 137.05 (n=9) | not stalled 133.90 (n=7) | MWU p=0.01
+   table_gray             stalled median 120.29 (n=9) | not stalled 115.73 (n=7) | MWU p=0.01
+   bg_sheet_right_gray    stalled median 178.51 (n=9) | not stalled 172.61 (n=7) | MWU p=0.00
+   gray_std               stalled median 89.15 (n=9) | not stalled 88.69 (n=7) | MWU p=0.09
+   table_rb               stalled median 1.28 (n=9) | not stalled 1.30 (n=7) | MWU p=0.05
+   onset vs trial order (Spearman), C_trunc: rho -0.55 p 0.027
+   stalled-ness by position (P1 trials come first): {'P1': 6, 'P2': 3}

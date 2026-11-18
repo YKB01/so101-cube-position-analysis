@@ -1,0 +1,71 @@
+test sessions against the training range (5th-95th percentile of all 90 training frames); % of frames inside / below / above:
+metric                   bg_sheet_right_gray  gray_mean  table_gray  table_rb
+session                                                                      
+eval 6 sets 11/4                        26.0       74.0        69.0      99.0
+eval control+edge 11/12                 57.0       75.0        86.0      98.0
+expert 50 7/31                         100.0       98.0        94.0      92.0
+new expert 20 11/12                     75.0       75.0        70.0      75.0
+recovery 20 10/15                       75.0       80.0        95.0     100.0
+retest 11/14                             0.0       62.0        68.0     100.0
+truncation 11/14                         0.0        6.0        36.0     100.0
+                session              metric  median  train_p5  train_p95  pct_below  pct_above
+         expert 50 7/31           gray_mean  132.00    125.82     132.86       0.00       2.00
+         expert 50 7/31          table_gray  114.95    106.08     116.01       0.00       6.00
+         expert 50 7/31 bg_sheet_right_gray  165.91    148.68     167.66       0.00       0.00
+         expert 50 7/31            table_rb    1.19      1.18       1.39       8.00       0.00
+      recovery 20 10/15           gray_mean  127.00    125.82     132.86      15.00       5.00
+      recovery 20 10/15          table_gray  113.72    106.08     116.01       0.00       5.00
+      recovery 20 10/15 bg_sheet_right_gray  151.43    148.68     167.66      25.00       0.00
+      recovery 20 10/15            table_rb    1.29      1.18       1.39       0.00       0.00
+    new expert 20 11/12           gray_mean  130.83    125.82     132.86      10.00      15.00
+    new expert 20 11/12          table_gray  108.66    106.08     116.01      25.00       5.00
+    new expert 20 11/12 bg_sheet_right_gray  165.95    148.68     167.66       0.00      25.00
+    new expert 20 11/12            table_rb    1.38      1.18       1.39       0.00      25.00
+       eval 6 sets 11/4           gray_mean  129.13    125.82     132.86      18.06       8.33
+       eval 6 sets 11/4          table_gray  108.54    106.08     116.01      27.08       3.47
+       eval 6 sets 11/4 bg_sheet_right_gray  170.50    148.68     167.66       0.00      74.31
+       eval 6 sets 11/4            table_rb    1.33      1.18       1.39       0.00       0.69
+eval control+edge 11/12           gray_mean  129.32    125.82     132.86      12.50      12.50
+eval control+edge 11/12          table_gray  109.88    106.08     116.01      10.71       3.57
+eval control+edge 11/12 bg_sheet_right_gray  166.83    148.68     167.66       0.00      42.86
+eval control+edge 11/12            table_rb    1.32      1.18       1.39       0.00       1.79
+           retest 11/14           gray_mean  132.64    125.82     132.86       0.00      38.00
+           retest 11/14          table_gray  115.25    106.08     116.01       0.00      32.00
+           retest 11/14 bg_sheet_right_gray  172.13    148.68     167.66       0.00     100.00
+           retest 11/14            table_rb    1.30      1.18       1.39       0.00       0.00
+       truncation 11/14           gray_mean  136.05    125.82     132.86       0.00      93.94
+       truncation 11/14          table_gray  118.56    106.08     116.01       0.00      63.64
+       truncation 11/14 bg_sheet_right_gray  176.23    148.68     167.66       0.00     100.00
+       truncation 11/14            table_rb    1.29      1.18       1.39       0.00       0.00
+
+within-session trends (linear fit against time; sd = spread across the session):
+metric                 bg_sheet_right_gray  gray_mean  table_gray  table_rb
+group                                                                      
+edge_control                         30.70      20.20       30.41     -0.04
+edge_mixed                           -6.47      14.31        7.22      0.02
+eval_expert70_smooth                 10.71      23.03       17.67     -0.01
+eval_expert_default                  -0.75      31.99      -14.92      0.14
+eval_expert_smooth                   -0.30       3.03       -0.99      0.07
+eval_mixed_default                   -2.38      -0.03       -5.91      0.11
+eval_mixed_smooth                     8.84       8.84        3.73      0.09
+eval_recovery_default                -4.00       8.29       -8.67     -0.06
+eval_recovery_smooth                 17.15      21.52       13.89     -0.02
+retest_1114                          -0.86      -0.34       -1.03      0.01
+train_expert50                       -0.01       1.37        0.15     -0.01
+train_hil20                          10.14       7.21       -2.09      0.05
+train_newexpert20                   -18.35     -12.00       -8.72      0.11
+trunc_1114                            0.37      -0.17        1.37     -0.02
+      group              metric  slope_per_h     p  first_half  second_half    sd
+retest_1114           gray_mean       -0.338 0.500     133.585      133.094 1.448
+retest_1114          table_gray       -1.028 0.240     116.224      115.466 2.539
+retest_1114 bg_sheet_right_gray       -0.857 0.310     173.941      172.944 2.446
+retest_1114            table_rb        0.006 0.260       1.300        1.305 0.015
+retest_1114            gray_std       -0.124 0.234      89.124       88.986 0.302
+ trunc_1114           gray_mean       -0.166 0.901     135.418      135.353 1.889
+ trunc_1114          table_gray        1.373 0.538     118.086      118.822 3.160
+ trunc_1114 bg_sheet_right_gray        0.374 0.864     175.627      176.070 3.086
+ trunc_1114            table_rb       -0.018 0.067       1.294        1.285 0.014
+ trunc_1114            gray_std       -0.857 0.000      89.135       88.895 0.381
+
+11/14 trials with lighting: 80 | missing lighting rows: 0
+motion onset (s) by series: {'retest C': {'count': 24.0, 'min': 2.43, '50%': 2.82, 'max': 4.7}, 'retest R': {'count': 24.0, 'min': 2.23, '50%': 2.53, 'max': 4.77}, 'trunc session C': {'count': 16.0, 'min': 2.07, '50%': 2.8, 'max': 4.7}, 'trunc session C_trunc': {'count': 16.0, 'min': 2.83, '50%': 4.97, 'max': 11.8}}

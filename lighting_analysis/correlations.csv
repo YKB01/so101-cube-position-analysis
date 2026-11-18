@@ -1,0 +1,77 @@
+series,light,behaviour,n,spearman,p
+retest C,gray_mean,success,24,-0.3702,0.0749
+retest C,gray_mean,speed10,24,-0.1383,0.5194
+retest C,gray_mean,onset_s,24,0.2294,0.2809
+retest C,gray_mean,first_grasp_time_s,24,0.3047,0.1477
+retest C,gray_mean,aim_err_x,24,-0.1026,0.6333
+retest C,table_gray,success,24,-0.3049,0.1474
+retest C,table_gray,speed10,24,-0.1400,0.5141
+retest C,table_gray,onset_s,24,-0.0148,0.9452
+retest C,table_gray,first_grasp_time_s,24,0.0666,0.7572
+retest C,table_gray,aim_err_x,24,-0.0226,0.9165
+retest C,bg_sheet_right_gray,success,24,-0.3485,0.0952
+retest C,bg_sheet_right_gray,speed10,24,-0.1774,0.4070
+retest C,bg_sheet_right_gray,onset_s,24,0.0816,0.7048
+retest C,bg_sheet_right_gray,first_grasp_time_s,24,0.1624,0.4485
+retest C,bg_sheet_right_gray,aim_err_x,24,0.2070,0.3319
+retest C,tod,success,24,0.2613,0.2174
+retest C,tod,speed10,24,0.3548,0.0889
+retest C,tod,onset_s,24,0.5382,0.0067
+retest C,tod,first_grasp_time_s,24,0.3186,0.1292
+retest C,tod,aim_err_x,24,-0.5861,0.0026
+retest R,gray_mean,success,24,-0.1554,0.4684
+retest R,gray_mean,speed10,24,-0.3078,0.1434
+retest R,gray_mean,onset_s,24,0.4243,0.0388
+retest R,gray_mean,first_grasp_time_s,24,0.0557,0.7960
+retest R,gray_mean,aim_err_x,24,-0.0991,0.6449
+retest R,table_gray,success,24,-0.1554,0.4684
+retest R,table_gray,speed10,24,0.0226,0.9165
+retest R,table_gray,onset_s,24,0.2264,0.2875
+retest R,table_gray,first_grasp_time_s,24,0.2089,0.3273
+retest R,table_gray,aim_err_x,24,0.0791,0.7132
+retest R,bg_sheet_right_gray,success,24,-0.0684,0.7509
+retest R,bg_sheet_right_gray,speed10,24,-0.3261,0.1199
+retest R,bg_sheet_right_gray,onset_s,24,0.4614,0.0232
+retest R,bg_sheet_right_gray,first_grasp_time_s,24,-0.1070,0.6186
+retest R,bg_sheet_right_gray,aim_err_x,24,-0.1017,0.6362
+retest R,tod,success,24,-0.3295,0.1159
+retest R,tod,speed10,24,-0.5791,0.0030
+retest R,tod,onset_s,24,0.2067,0.3325
+retest R,tod,first_grasp_time_s,24,0.4299,0.0360
+retest R,tod,aim_err_x,24,-0.5765,0.0032
+trunc session C,gray_mean,success,16,0.0271,0.9206
+trunc session C,gray_mean,speed10,16,-0.4088,0.1159
+trunc session C,gray_mean,onset_s,16,0.4536,0.0776
+trunc session C,gray_mean,first_grasp_time_s,16,0.1382,0.6097
+trunc session C,gray_mean,aim_err_x,16,-0.1912,0.4782
+trunc session C,table_gray,success,16,-0.0271,0.9206
+trunc session C,table_gray,speed10,16,-0.2147,0.4246
+trunc session C,table_gray,onset_s,16,0.2135,0.4271
+trunc session C,table_gray,first_grasp_time_s,16,-0.0500,0.8541
+trunc session C,table_gray,aim_err_x,16,-0.5235,0.0374
+trunc session C,bg_sheet_right_gray,success,16,0.0271,0.9206
+trunc session C,bg_sheet_right_gray,speed10,16,-0.2324,0.3865
+trunc session C,bg_sheet_right_gray,onset_s,16,0.2563,0.3381
+trunc session C,bg_sheet_right_gray,first_grasp_time_s,16,0.0176,0.9483
+trunc session C,bg_sheet_right_gray,aim_err_x,16,-0.4853,0.0567
+trunc session C,tod,success,16,0.3796,0.1470
+trunc session C,tod,speed10,16,0.3706,0.1577
+trunc session C,tod,onset_s,16,-0.3947,0.1303
+trunc session C,tod,first_grasp_time_s,16,-0.5618,0.0235
+trunc session C,tod,aim_err_x,16,-0.6235,0.0099
+trunc session C_trunc,gray_mean,speed10,16,-0.4000,0.1248
+trunc session C_trunc,gray_mean,onset_s,16,0.6308,0.0088
+trunc session C_trunc,gray_mean,first_grasp_time_s,16,0.5916,0.0158
+trunc session C_trunc,gray_mean,aim_err_x,16,0.2941,0.2688
+trunc session C_trunc,table_gray,speed10,16,-0.3147,0.2352
+trunc session C_trunc,table_gray,onset_s,16,0.5556,0.0254
+trunc session C_trunc,table_gray,first_grasp_time_s,16,0.5166,0.0405
+trunc session C_trunc,table_gray,aim_err_x,16,0.0853,0.7535
+trunc session C_trunc,bg_sheet_right_gray,speed10,16,-0.3882,0.1373
+trunc session C_trunc,bg_sheet_right_gray,onset_s,16,0.6647,0.0050
+trunc session C_trunc,bg_sheet_right_gray,first_grasp_time_s,16,0.6107,0.0120
+trunc session C_trunc,bg_sheet_right_gray,aim_err_x,16,0.1882,0.4851
+trunc session C_trunc,tod,speed10,16,0.7206,0.0016
+trunc session C_trunc,tod,onset_s,16,-0.5497,0.0274
+trunc session C_trunc,tod,first_grasp_time_s,16,-0.6402,0.0076
+trunc session C_trunc,tod,aim_err_x,16,-0.8882,0.0000

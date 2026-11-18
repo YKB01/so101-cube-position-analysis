@@ -1,5 +1,5 @@
 {
-  "_comment": "PROPOSED fixed regions (x0, y0, x1, y1) in the 640x480 first frame; to be confirmed",
+  "_comment": "Confirmed fixed regions (x0, y0, x1, y1) in the 640x480 first frame. Window is at the right-rear of the camera: bg_sheet_right (right) and bg_top_strip (rear) are the window-side backgrounds, bg_desk is the white desk behind the board.",
   "table": [
     190,
     262,

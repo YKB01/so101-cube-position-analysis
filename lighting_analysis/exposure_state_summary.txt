@@ -1,0 +1,12 @@
+table gray split at 117.5: {'bright': 19, 'dark': 13}; stalled-at-start (onset > 4.77 s) by state: {('C', 'bright'): {'sum': 0, 'count': 10}, ('C', 'dark'): {'sum': 0, 'count': 6}, ('C_trunc', 'bright'): {'sum': 8, 'count': 9}, ('C_trunc', 'dark'): {'sum': 1, 'count': 7}}
+fitted mapping dark -> bright at input levels 0, .25, .5, .75, 1 (per channel R/G/B): [0.001, 0.269, 0.531, 0.774, 0.99]; [0.001, 0.271, 0.53, 0.773, 0.991]; [0.005, 0.277, 0.534, 0.773, 0.992]
+
+predicted arm displacement 1 s ahead (frame 0): original image vs the same image mapped to the other exposure state
+                 n  orig  other  change  change_sd
+model   state                                     
+C       bright  10  6.52   6.66    0.13       0.09
+        dark     6  6.75   6.60   -0.15       0.13
+C_trunc bright   9  7.12   7.20    0.08       0.03
+        dark     7  8.22   8.11   -0.11       0.09
+C: predicted displacement (original) vs actual onset: rho -0.56 (p 0.026)
+C_trunc: predicted displacement (original) vs actual onset: rho -0.54 (p 0.031)
