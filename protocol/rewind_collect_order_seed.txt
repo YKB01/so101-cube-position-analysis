@@ -1,0 +1,1 @@
+seed 3042031172 (numpy default_rng permutation of R01..R20), generated with the protocol on 2026-11-18

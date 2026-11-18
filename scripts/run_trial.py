@@ -34,8 +34,10 @@ import threading
 import tty
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
@@ -202,6 +204,15 @@ def main():
     print(f"{tid} (position {row['position_id']}), attempt {k}: starting; robot moves after the policy is loaded.\n"
           f"Right arrow / e = end early (saved), Ctrl-C = interrupt. Full log: {outdir / 'run.log'}")
     env = dict(os.environ, RT_ARGS=json.dumps(args), PYTHONUNBUFFERED="1")
+    sys.path.insert(0, str(ROOT))
+    import lighting_probe as LP
+    if not LP.inside_window(datetime.now(), "13:30-15:30"):
+        print(f"  WARNING: outside the protocol window 13:30-15:30 (now {datetime.now():%H:%M}); the trial is flagged.")
+    cam = {}
+    def _read_cam():                                   # camera controls read back while the policy runs (read only)
+        time.sleep(18)
+        cam.update(LP.read_camera_controls("/dev/video0")); cam["cam_read_while_running"] = proc.poll() is None
+    threading.Thread(target=_read_cam, daemon=True).start()
     proc = subprocess.Popen([sys.executable, "-u", str(Path(__file__).resolve()), "--child", str(outdir)],
                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env, cwd=ROOT)
     pat = re.compile("|".join(re.escape(s) for s in scrub))
@@ -227,6 +238,21 @@ def main():
     meta = dict(trial_id=tid, position_id=row["position_id"], attempt=k, dataset_repo_id=actual_repo,
                 started_unix=started, ended_unix=ended, early_end_key=early.pressed, return_code=rc, placement=pl, inference=INFERENCE,
                 episode_time_s=EPISODE_TIME_S, chunks=summ)
+    meta["outside_time_window"] = not LP.inside_window(datetime.fromtimestamp(started), "13:30-15:30")
+    meta["camera_controls"] = dict(cam)
+    try:                                               # control-loop period from the logged policy-step times
+        t = np.load(outdir / "chunks.npz")["t"].astype(float); dt = np.diff(t) * 1e3
+        meta["loop_dt_mean_ms"], meta["loop_dt_max_ms"] = float(dt.mean()), float(dt.max())
+    except Exception as e:
+        meta["loop_dt_error"] = str(e)
+    try:                                               # first-frame lighting covariates from the recorded dataset
+        from lerobot.datasets import LeRobotDataset
+        name = actual_repo.split("/", 1)[1]
+        root = Path.home() / ".cache/huggingface/lerobot" / actual_repo
+        im = np.asarray(LeRobotDataset(actual_repo, root=root)[0]["observation.images.front"].permute(1, 2, 0).clip(0, 1) * 255, dtype=np.uint8)
+        meta.update(LP.frame_lighting(im))
+    except Exception as e:
+        meta["lighting_error"] = str(e)
     (outdir / "meta.json").write_text(json.dumps(meta, indent=2, default=str))
     print(f"finished (return code {rc}); recorded {summ.get('n_steps', 0)} policy steps with full action chunks.")
 

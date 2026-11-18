@@ -56,5 +56,8 @@
   "align_trim_max_deg": 15.0,
   "dry_run_stop_before_grasp_s": 1.5,
   "settle_still_deg": 0.3,
-  "settle_max_err_deg": 6.0
+  "settle_max_err_deg": 6.0,
+  "time_window": "13:30-15:30",
+  "order_csv": "",
+  "positions_json": "protocol/rewind_collect_positions.json"
 }

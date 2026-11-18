@@ -40,6 +40,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import lighting_probe as LP  # noqa: E402
 import rewind_control as RC  # noqa: E402
 import rewind_target as RT   # noqa: E402
 
@@ -47,13 +48,16 @@ ARM_KEYS = ["shoulder_pan.pos", "shoulder_lift.pos", "elbow_flex.pos", "wrist_fl
 GRIP_KEY = "gripper.pos"
 KEYS6 = ARM_KEYS + [GRIP_KEY]
 META_COLUMNS = [
-    "episode_id", "timestamp", "saved_episode_index", "segment_episode_index", "rewind_mode", "level", "rewind_segment_saved",
+    "episode_id", "timestamp", "position_id", "position_target_x", "position_target_y", "saved_episode_index", "segment_episode_index", "rewind_mode", "level", "rewind_segment_saved",
     "cube_start_x", "cube_start_y", "trigger_type", "trigger_frame", "trigger_time_s",
     "target_buffer_index", "target_episode_frame", "target_time_s", "target_progress", "target_nn_distance",
     "rewind_planned_s", "rewind_actual_s", "n_waypoints", "joint_distance_deg", "settled",
     "final_err_max_deg", "final_err_norm", "final_err_norm_over_tau", "final_err_shoulder_pan", "final_err_shoulder_lift", "final_err_elbow_flex", "final_err_wrist_flex", "final_err_wrist_roll",
     "cube_before_x", "cube_before_y", "cube_after_x", "cube_after_y", "cube_shift_px", "cube_shift_from_start_px",
-    "align_err_max_deg", "align_retries", "human_s", "discarded", "discard_reason", "autonomous_dir"]
+    "align_err_max_deg", "align_retries", "human_s", "discarded", "discard_reason", "autonomous_dir",
+    # covariates (camera stays on automatic exposure; nothing is locked)
+    "first_frame_table_gray", "first_frame_sheet_gray", "first_frame_gray_mean", "first_frame_table_rb", "outside_time_window",
+    "autonomous_dt_mean_ms", "autonomous_dt_max_ms", "human_dt_mean_ms", "human_dt_max_ms"] + [f"cam_{c}" for c in LP.CONTROLS]
 
 
 # ====================================================================================================== config
@@ -69,7 +73,9 @@ def load_config(argv=None):
     ap.add_argument("--rewind_mode", choices=["shallow", "deep"], default="deep")
     ap.add_argument("--policy_path", default=None, help="ACT checkpoint (pretrained_model directory); needed for the full flow")
     for k, v in cfg.items():
-        if isinstance(v, bool):
+        if k == "temporal_ensemble_coeff":
+            ap.add_argument("--temporal_ensemble_coeff", type=str, default=None, help="float, or 'none' for no temporal ensembling")
+        elif isinstance(v, bool):
             ap.add_argument(f"--{k}", type=lambda s: s.lower() in ("1", "true", "yes"), default=None)
         else:
             ap.add_argument(f"--{k}", type=type(v), default=None)
@@ -77,8 +83,12 @@ def load_config(argv=None):
     if a.config:
         cfg.update({k: v for k, v in json.loads(Path(a.config).read_text()).items() if k in cfg})
     for k in cfg:
-        if getattr(a, k) is not None:
-            cfg[k] = getattr(a, k)
+        v_ = getattr(a, k)
+        if k == "temporal_ensemble_coeff":
+            if v_ is not None:
+                cfg[k] = None if v_.lower() in ("none", "null") else float(v_)
+        elif v_ is not None:
+            cfg[k] = v_
     cfg.update(replay=a.replay, dry_run=a.dry_run, align_only=a.align_only, policy_only=a.policy_only, rewind_mode=a.rewind_mode, policy_path=a.policy_path)
     if sum([a.replay, a.dry_run, a.align_only, a.policy_only]) > 1:
         ap.error("choose at most one of --replay --dry_run --align_only --policy_only")
@@ -206,7 +216,19 @@ class Collector:
         self.keys = KeyReader()
         self.estop_flag = threading.Event()
         self.out = Path(cfg["out_dir"]); self.out.mkdir(parents=True, exist_ok=True)
-        (self.out / "config_used.json").write_text(json.dumps(cfg, indent=2, default=str))
+        try:
+            import subprocess as _sp
+            cfg_out = dict(cfg, git_commit=_sp.run(["git", "rev-parse", "HEAD"], cwd=HERE, capture_output=True, text=True).stdout.strip(),
+                           git_dirty=bool(_sp.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=HERE, capture_output=True, text=True).stdout.strip()))
+        except Exception:
+            cfg_out = dict(cfg)
+        (self.out / "config_used.json").write_text(json.dumps(cfg_out, indent=2, default=str))
+        self.order = None
+        if cfg.get("order_csv"):
+            import pandas as pd
+            pos = {p["position_id"]: p for p in json.loads(Path(cfg["positions_json"]).read_text())["positions"]}
+            self.order = [(r.position_id, pos[r.position_id]["cx"], pos[r.position_id]["cy"]) for r in pd.read_csv(cfg["order_csv"]).itertuples()]
+        self.pos_ptr = 0
         self.meta_path = self.out / "rewind_meta.csv"
         self.dry = cfg["dry_run"]
         self.align_only, self.policy_only = cfg["align_only"], cfg["policy_only"]
@@ -248,7 +270,7 @@ class Collector:
             argv = ["--robot.type=so101_follower", f"--robot.port={cfg['robot_port']}", f"--robot.id={cfg['robot_id']}", f"--robot.cameras={cams}",
                     *([] if self.policy_only else ["--teleop.type=so101_leader", f"--teleop.port={cfg['leader_port']}", f"--teleop.id={cfg['leader_id']}"]),
                     f"--policy.path={cfg['policy_path']}", f"--policy.n_action_steps={cfg['n_action_steps']}",
-                    f"--policy.temporal_ensemble_coeff={cfg['temporal_ensemble_coeff']}", f"--device={cfg['device']}",
+                    *([] if cfg["temporal_ensemble_coeff"] is None else [f"--policy.temporal_ensemble_coeff={cfg['temporal_ensemble_coeff']}"]), f"--device={cfg['device']}",
                     "--inference.type=sync", "--strategy.type=base", f"--task={cfg['task']}", f"--fps={int(self.fps)}", "--play_sounds=false"]
 
             def _parse(c):
@@ -442,6 +464,14 @@ class Collector:
         if self.leader_torque_on:
             self.teleop.disable_torque(); self.leader_torque_on = False
         print("\n=== RESET: teleoperate the arm to its start pose (not recorded), place the cube. [s] start episode   [q] quit ===", flush=True)
+        if self.order is not None:
+            if self.pos_ptr < len(self.order):
+                pid, px_, py_ = self.order[self.pos_ptr]
+                print(f"NEXT POSITION: {pid} at ({px_:.0f}, {py_:.0f}) px ({self.pos_ptr + 1}/{len(self.order)}); place the cube with scripts/place_cube_overlay.py", flush=True)
+            else:
+                print("all positions of the order file are done", flush=True)
+        if not LP.inside_window(datetime.now(), self.cfg["time_window"]):
+            print(f"WARNING: the protocol window is {self.cfg['time_window']}; it is now {datetime.now():%H:%M}. Episodes started now are flagged outside_time_window.", flush=True)
         self.slide_follower_to_leader()
         while True:
             t0 = time.perf_counter()
@@ -462,6 +492,8 @@ class Collector:
                     rewind_segment_saved=False)
         ed = self.out / "episodes" / f"ep_{eid:04d}"
         meta["autonomous_dir"] = str(ed)
+        if self.order is not None and self.pos_ptr < len(self.order):
+            meta["position_id"], meta["position_target_x"], meta["position_target_y"] = self.order[self.pos_ptr]
         self.autolog = None
         try:
             self.autonomous(meta, ed)
@@ -511,15 +543,20 @@ class Collector:
             save_png(ed / "cube_start.png", rgb)
         size = (rgb.shape[1], rgb.shape[0]) if rgb is not None else None
         self.autolog = AutoLog(ed, self.fps, size)
+        if rgb is not None:
+            meta.update(self.episode_covariates(rgb))
         if self.dry:
             return self.autonomous_dry(meta)
         self.engine.reset(); self.interp.reset()
         from lerobot.rollout.strategies.core import send_next_action
         print(f"\n=== episode {meta['episode_id']}: AUTONOMOUS (cube at {meta['cube_start_x']:.0f},{meta['cube_start_y']:.0f}); "
               f"[t] manual trigger  [x] discard  [SPACE] e-stop ===", flush=True)
-        frame, t_start, last_action = 0, time.perf_counter(), None
+        frame, t_start, last_action, dts, t_prev = 0, time.perf_counter(), None, [], None
         while True:
             t0 = time.perf_counter()
+            if t_prev is not None:
+                dts.append((t0 - t_prev) * 1e3)
+            t_prev = t0
             manual = "t" in self.poll_keys(extra=("t",))
             obs = self.get_obs(); state = vec6(obs)
             op = self.processors.robot_observation_processor(obs)
@@ -536,9 +573,18 @@ class Collector:
                 meta["trigger_type"], meta["trigger_frame"], meta["trigger_time_s"] = fired, frame, frame / self.fps
                 print(f"*** TRIGGER: {fired} at {frame / self.fps:.1f} s", flush=True)
                 self.trigger_state6 = state
+                if dts:
+                    meta["autonomous_dt_mean_ms"], meta["autonomous_dt_max_ms"] = float(np.mean(dts)), float(np.max(dts))
                 return
             frame += 1
             self.sleep_to(t0)
+
+    def episode_covariates(self, rgb):
+        """First-frame table gray (and other lighting numbers), read-back of the camera controls while the camera streams, time-window flag."""
+        cov = LP.frame_lighting(rgb)
+        cov.update(LP.read_camera_controls(f"/dev/video{self.cfg['camera_index']}"))
+        cov["outside_time_window"] = not LP.inside_window(datetime.now(), self.cfg["time_window"])
+        return cov
 
     def autonomous_dry(self, meta):
         """Dry run: the follower replays a recorded failed trial (step-limited) so that a realistic state cache exists."""
@@ -812,9 +858,12 @@ class Collector:
         self.teleop.disable_torque(); self.leader_torque_on = False
         self.phase = "human"
         print("\n=== HUMAN: recording the correction. [e] end and save   [x] discard   [SPACE] e-stop ===", flush=True)
-        t_begin = time.perf_counter()
+        t_begin = time.perf_counter(); hdts, h_prev = [], None
         while True:
             t0 = time.perf_counter()
+            if h_prev is not None:
+                hdts.append((t0 - h_prev) * 1e3)
+            h_prev = t0
             ks = self.poll_keys(extra=("e",))
             obs = self.get_obs()
             op = self.processors.robot_observation_processor(obs)
@@ -825,9 +874,12 @@ class Collector:
                 break
             self.sleep_to(t0)
         meta["human_s"] = time.perf_counter() - t_begin
+        if hdts:
+            meta["human_dt_mean_ms"], meta["human_dt_max_ms"] = float(np.mean(hdts)), float(np.max(hdts))
         idx = self.ds.num_episodes
         self.ds.save_episode()
         meta["saved_episode_index"] = idx
+        self.pos_ptr += 1
         print(f"saved correction episode {idx} ({meta['human_s']:.1f} s)", flush=True)
 
     # ------------------------------------------------------------------------------------------- top level
@@ -1086,17 +1138,20 @@ def _collector_methods():
                    chunk_size=pc.chunk_size, n_obs_steps=getattr(pc, "n_obs_steps", None), device=self.rcfg.device, use_amp=getattr(pc, "use_amp", None),
                    inference=getattr(self.rcfg.inference, "type", "sync"), interpolation_multiplier=self.rcfg.interpolation_multiplier, fps=self.rcfg.fps,
                    has_temporal_ensembler=hasattr(pol, "temporal_ensembler"), checkpoint=self.cfg["policy_path"])
-        want = dict(n_action_steps=1, temporal_ensemble_coeff=0.01, inference="sync", interpolation_multiplier=1, fps=30.0)
+        want = dict(n_action_steps=self.cfg["n_action_steps"], temporal_ensemble_coeff=self.cfg["temporal_ensemble_coeff"], inference="sync", interpolation_multiplier=1, fps=30.0)
+        evalset = (self.cfg["n_action_steps"] == 1 and self.cfg["temporal_ensemble_coeff"] == 0.01)
+        print(f"requested settings: n_action_steps={want['n_action_steps']}, temporal_ensemble_coeff={want['temporal_ensemble_coeff']} "
+              f"({'the evaluation settings' if evalset else 'NOT the evaluation settings (1, 0.01)'})", flush=True)
         print("\nEFFECTIVE POLICY CONFIG:", flush=True)
         bad = []
         for k, v in eff.items():
             flag = ""
             if k in want and (v != want[k]):
-                flag = f"   <-- DIFFERS from the evaluation setting ({want[k]})"; bad.append(k)
+                flag = f"   <-- DIFFERS from the requested setting ({want[k]})"; bad.append(k)
             print(f"   {k:26s} {v}{flag}", flush=True)
-        if not eff["has_temporal_ensembler"]:
-            bad.append("temporal_ensembler"); print("   <-- no temporal ensembler is active", flush=True)
-        print("   => " + ("MATCHES the evaluation settings (n_action_steps=1, temporal_ensemble_coeff=0.01, sync, 30 fps)" if not bad else f"MISMATCH: {bad}"), flush=True)
+        if eff["has_temporal_ensembler"] != (want["temporal_ensemble_coeff"] is not None):
+            bad.append("temporal_ensembler"); print("   <-- temporal ensembler state differs from the request", flush=True)
+        print("   => " + ("MATCHES the requested settings" if not bad else f"MISMATCH: {bad}"), flush=True)
         (self.out / "policy_config.json").write_text(json.dumps(eff | dict(mismatch=bad), indent=2, default=str))
         return bad
 
@@ -1161,6 +1216,7 @@ def _collector_methods():
         if rgb is not None:
             save_png(ed / "cube_start.png", rgb)
         self.autolog = AutoLog(ed, self.fps, (rgb.shape[1], rgb.shape[0]) if rgb is not None else None)
+        cov = self.episode_covariates(rgb) if rgb is not None else {}
         self.engine.reset(); self.interp.reset()
         T, dts, t_obs, t_inf, states, actions = [], [], [], [], [], []
         last_action, early = None, False
@@ -1195,6 +1251,7 @@ def _collector_methods():
         gd = G.detect_first_grasp(S[:, 5]); gf = gd["grasp_frame"]
         sp = np.r_[0.0, np.linalg.norm(np.diff(S[:, :5], axis=0), axis=1) * 30.0]
         row = dict(episode_id=eid, timestamp=datetime.now().isoformat(timespec="seconds"), cube_start_x=cx, cube_start_y=cy, duration_s=T[-1] if T else 0.0,
+                   **cov,
                    n_ticks=len(S), early_end=early, hz_mean=1e3 / dts.mean() if len(dts) else np.nan, hz_p5=1e3 / np.percentile(dts, 95) if len(dts) else np.nan,
                    dt_ms_mean=dts.mean(), dt_ms_p95=np.percentile(dts, 95), dt_ms_max=dts.max(),
                    slow_ticks_pct=100 * float((dts > c["slow_tick_factor"] * 1e3 / self.fps).mean()),

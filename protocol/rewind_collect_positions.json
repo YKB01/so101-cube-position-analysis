@@ -1,0 +1,127 @@
+{
+  "coordinate_system": "front camera 640x480 px, cube centre in the first frame",
+  "source": "recovery_position_check/recovery_positions_resolved.csv: the cube positions of the 20 recovery (DAgger) episodes of 10/15; positions[].position_id R01..R20 = recovery episode 0..19 + 1",
+  "tolerance_px": 3.0,
+  "positions": [
+    {
+      "position_id": "R01",
+      "cx": 353.04,
+      "cy": 211.51,
+      "recovery_episode": 0
+    },
+    {
+      "position_id": "R02",
+      "cx": 358.46,
+      "cy": 223.65,
+      "recovery_episode": 1
+    },
+    {
+      "position_id": "R03",
+      "cx": 359.46,
+      "cy": 222.14,
+      "recovery_episode": 2
+    },
+    {
+      "position_id": "R04",
+      "cx": 356.81,
+      "cy": 209.47,
+      "recovery_episode": 3
+    },
+    {
+      "position_id": "R05",
+      "cx": 353.86,
+      "cy": 204.1,
+      "recovery_episode": 4
+    },
+    {
+      "position_id": "R06",
+      "cx": 403.31,
+      "cy": 212.08,
+      "recovery_episode": 5
+    },
+    {
+      "position_id": "R07",
+      "cx": 349.23,
+      "cy": 214.94,
+      "recovery_episode": 6
+    },
+    {
+      "position_id": "R08",
+      "cx": 337.41,
+      "cy": 253.13,
+      "recovery_episode": 7
+    },
+    {
+      "position_id": "R09",
+      "cx": 402.1,
+      "cy": 196.63,
+      "recovery_episode": 8
+    },
+    {
+      "position_id": "R10",
+      "cx": 402.38,
+      "cy": 193.55,
+      "recovery_episode": 9
+    },
+    {
+      "position_id": "R11",
+      "cx": 405.78,
+      "cy": 212.97,
+      "recovery_episode": 10
+    },
+    {
+      "position_id": "R12",
+      "cx": 364.83,
+      "cy": 235.33,
+      "recovery_episode": 11
+    },
+    {
+      "position_id": "R13",
+      "cx": 405.29,
+      "cy": 218.05,
+      "recovery_episode": 12
+    },
+    {
+      "position_id": "R14",
+      "cx": 405.62,
+      "cy": 220.31,
+      "recovery_episode": 13
+    },
+    {
+      "position_id": "R15",
+      "cx": 354.61,
+      "cy": 187.89,
+      "recovery_episode": 14
+    },
+    {
+      "position_id": "R16",
+      "cx": 392.76,
+      "cy": 176.81,
+      "recovery_episode": 15
+    },
+    {
+      "position_id": "R17",
+      "cx": 396.51,
+      "cy": 177.73,
+      "recovery_episode": 16
+    },
+    {
+      "position_id": "R18",
+      "cx": 407.24,
+      "cy": 192.73,
+      "recovery_episode": 17
+    },
+    {
+      "position_id": "R19",
+      "cx": 351.69,
+      "cy": 182.35,
+      "recovery_episode": 18
+    },
+    {
+      "position_id": "R20",
+      "cx": 355.41,
+      "cy": 207.33,
+      "recovery_episode": 19
+    }
+  ]
+}
