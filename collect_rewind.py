@@ -695,7 +695,7 @@ class Collector:
         self.phase = "align"
         tgt6 = np.asarray(tgt6, float)
         self.teleop.enable_torque(); self.leader_torque_on = True
-        retries, prev_emax = 0, None
+        retries, prev_emax, carry = 0, None, None
         while True:
             cur = np.array([self.teleop.get_action()[k] for k in KEYS6], float)
             dur = max(c["align_min_s"], np.abs(tgt6 - cur).max() / c["align_speed_deg_s"])
@@ -709,24 +709,33 @@ class Collector:
                     self.teleop.send_feedback({k: float(cur[i] * (1 - a) + tgt6[i] * a) for i, k in enumerate(KEYS6)})
                     self.send6(self.last_cmd6)
                     self.sleep_to(t0)
+                # trim phase: the leader's position controller has a steady-state error under gravity (a few degrees), so the goal is moved
+                # beyond the target by an integrated error (bounded by align_trim_max_deg) until the measured leader pose meets the target
+                goal, max_off, ki = (tgt6.copy() if carry is None else carry.copy()), c["align_trim_max_deg"], c["align_trim_gain_per_s"]
                 for _ in range(max(int(c["align_hold_s"] * self.fps), 1)):
-                    t0 = time.perf_counter(); self.poll_keys(); self.send6(self.last_cmd6); self.sleep_to(t0)
+                    t0 = time.perf_counter(); self.poll_keys()
+                    now = np.array([self.teleop.get_action()[k] for k in KEYS6], float)
+                    goal = np.clip(goal + ki * self.dt * (tgt6 - now), tgt6 - max_off, tgt6 + max_off)
+                    self.teleop.send_feedback({k: float(goal[i]) for i, k in enumerate(KEYS6)})
+                    self.send6(self.last_cmd6); self.sleep_to(t0)
             except EStop:
                 with contextlib.suppress(Exception):                       # keep the leader where it is
                     self.teleop.send_feedback({k: float(v) for k, v in self.teleop.get_action().items()})
                 raise
             lp = np.array([self.teleop.get_action()[k] for k in KEYS6], float)
             err = lp - tgt6
+            carry = goal.copy()
             emax = float(np.abs(err).max())
             if log is not None:
                 log.append(dict(attempt=retries + 1, duration_s=dur, **{f"err_{k}": float(err[i]) for i, k in enumerate(KEYS6)}, err_max=emax,
-                                leader=lp.tolist(), target=tgt6.tolist()))
+                                leader=lp.tolist(), target=tgt6.tolist(), trim_offset=(goal - tgt6).tolist()))
                 if self.report_hook is not None:
                     self.report_hook()
             if emax <= c["align_tol_deg"]:
                 return err, retries
             worst = int(np.argmax(np.abs(err)))
-            print(f"   attempt {retries + 1}: leader - target per joint {np.round(err, 1).tolist()} deg (worst: {KEYS6[worst]} {err[worst]:+.1f}); tolerance {c['align_tol_deg']}", flush=True)
+            print(f"   attempt {retries + 1}: leader - target per joint {np.round(err, 1).tolist()} deg (worst: {KEYS6[worst]} {err[worst]:+.1f}); tolerance {c['align_tol_deg']}; "
+                  f"goal offset used {np.round(goal - tgt6, 1).tolist()}", flush=True)
             # stall: the error did not improve by >= 0.5 deg compared with the previous attempt -> the leader is blocked (table, joint limit, ...): stop pushing
             if retries >= 1 and prev_emax is not None and emax > prev_emax - 0.5:
                 self.teleop.disable_torque(); self.leader_torque_on = False
