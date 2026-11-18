@@ -106,3 +106,19 @@ Replay path (phase 0 addendum): `plan_rewind_path` replays the recorded measured
 `rewind_resample_min_step_deg` (2.0 deg, joint-space distance) so that standing still and small back-and-forth adjustments are skipped;
 `estimate_rewind_steps` gives the number of control steps at a per-joint limit (default 1.5 deg/step). Start-pose targets (`level = "start_pose"`)
 are not discarded: the level is stored in the per-episode metadata so that results can be reported with and without them.
+
+## Online collection with automatic rewind (`collect_rewind.py`)
+Real-robot script for "policy fails -> automatic rewind -> human corrects". Parameters: `collect_rewind_config.json` (defaults, overridable as `--key value`)
+and `rewind_offline/rewind_params.json` (rule thresholds). Hardware-free parts are in `rewind_control.py` (state buffer, online trigger, step-limited rewind controller).
+- Full flow: `python collect_rewind.py --rewind_mode deep --policy_path <checkpoint>/pretrained_model --repo_id YKB0123/rewind_deep_20`
+  (rewind segments go to `<repo_id>_rewind_seg`, `intervention=False`, marked in `rewind_segment_meta.csv` in that dataset's root).
+  State machine: RESET (teleop, not recorded) -> AUTONOMOUS (ACT, 15 s state cache; triggers: empty grasp, 30 s timeout, manual) -> TRIGGERED (hold, open gripper,
+  0.5 s) -> target selection (shallow = time rule, deep = corrected rule) -> REWIND (measured trajectory backwards, <= 1.5 deg/joint/tick, gripper open) ->
+  ALIGN (leader driven to the follower's measured pose, tolerance and retries in the config) -> WAIT_START (leader torque stays on until `s`) ->
+  HUMAN (leader released, recorded with `intervention=True`, `e` to end) -> RESET. Per-episode metadata: `<out_dir>/rewind_meta.csv` (includes the `level` field).
+- Keys: `s` start, `t` manual trigger, `e` end correction, `x` discard, `c` continue after a prompt, `r` rewind to the start pose when no target, `q` quit (RESET), SPACE emergency stop
+  (sends the measured pose once, then no commands; torque stays on; quitting needs confirmation and first moves the arm back to its start-up pose).
+- `--dry_run`: follower only (no leader, no camera, no cube); the follower replays a recorded failed trial (`--dry_run_source E12|T21|...`, step-limited) to build a realistic cache,
+  then manual trigger / online trigger -> open gripper -> select -> rewind -> settle; writes sent vs measured per waypoint and the final error (per joint, normalised, compared with tau).
+- `--replay`: no hardware; the 29 recorded failed trials drive trigger detection, selection, path planning and the controller (`rewind_offline/replay_*`).
+- Software tests with simulated hardware: `rewind_offline/test_collect_dry_fake.py`, `test_collect_full_fake.py`, `test_dataset_roundtrip.py`.

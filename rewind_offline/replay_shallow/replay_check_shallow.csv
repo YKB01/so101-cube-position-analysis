@@ -1,0 +1,30 @@
+trial,dataset,trigger_type,trigger_frame,offline_trigger_frame,trigger_match,level,target_frame,offline_target_frame,target_match,n_waypoints,planned_ticks,actual_ticks,max_cmd_jump_deg,final_err_max_deg,final_err_norm,first_wp_dist_to_trigger_state
+E00,eval_expert_smooth,empty_grasp,280,280,True,shallow,218,218,True,12,22,22,1.500,1.283,0.027,0.000
+E01,eval_expert_smooth,empty_grasp,275,275,True,shallow,163,163,True,19,33,33,1.500,1.074,0.024,0.000
+E02,eval_expert_smooth,empty_grasp,277,277,True,shallow,218,218,True,13,23,23,1.500,1.358,0.024,0.000
+E03,eval_expert_smooth,empty_grasp,306,306,True,shallow,248,248,True,13,25,25,1.500,1.367,0.029,0.000
+E04,eval_expert_smooth,empty_grasp,319,319,True,shallow,271,271,True,10,17,17,1.500,1.426,0.023,0.000
+E05,eval_expert_smooth,empty_grasp,321,321,True,shallow,265,265,True,10,19,19,1.500,1.378,0.026,0.000
+E06,eval_expert_smooth,empty_grasp,324,324,True,shallow,271,271,True,10,19,19,1.500,1.251,0.027,0.000
+E07,eval_expert_smooth,empty_grasp,328,328,True,shallow,277,277,True,10,18,18,1.500,1.415,0.025,0.000
+E12,eval_expert_smooth,empty_grasp,305,305,True,shallow,256,256,True,7,12,12,1.500,1.035,0.028,0.000
+E13,eval_expert_smooth,empty_grasp,301,301,True,shallow,249,249,True,8,14,14,1.500,0.861,0.022,0.000
+E14,eval_expert_smooth,empty_grasp,305,305,True,shallow,248,248,True,9,16,16,1.500,1.306,0.034,0.000
+E15,eval_expert_smooth,empty_grasp,308,308,True,shallow,257,257,True,8,14,14,1.500,1.302,0.036,0.000
+E16,eval_expert_smooth,empty_grasp,337,337,True,shallow,278,278,True,6,11,11,1.500,1.013,0.026,0.000
+E18,eval_expert_smooth,empty_grasp,349,349,True,shallow,286,286,True,7,13,13,1.500,0.687,0.050,0.000
+E20,eval_expert_smooth,empty_grasp,307,307,True,shallow,259,259,True,5,8,8,1.500,1.146,0.023,0.000
+E21,eval_expert_smooth,empty_grasp,314,314,True,shallow,267,267,True,5,8,8,1.500,0.913,0.020,0.000
+E22,eval_expert_smooth,empty_grasp,289,289,True,shallow,243,243,True,6,9,9,1.500,1.130,0.029,0.000
+E23,eval_expert_smooth,empty_grasp,298,298,True,shallow,248,248,True,6,11,11,1.500,1.090,0.022,0.000
+T08,retest,empty_grasp,236,236,True,shallow,191,191,True,5,7,7,1.500,1.118,0.115,0.000
+T17,retest,empty_grasp,289,289,True,shallow,244,244,True,7,11,11,1.500,0.861,0.098,0.000
+T18,retest,empty_grasp,334,334,True,shallow,257,257,True,13,18,18,1.500,1.446,0.202,0.000
+T19,retest,empty_grasp,323,323,True,shallow,246,246,True,15,24,24,1.500,1.372,0.252,0.000
+T21,retest,timeout(end of data),619,619,True,shallow,589,589,True,11,22,22,1.500,1.239,0.031,0.000
+T24,retest,empty_grasp,331,331,True,shallow,253,253,True,13,20,20,1.500,1.106,0.150,0.000
+T29,retest,empty_grasp,363,363,True,shallow,292,292,True,14,23,23,1.500,1.300,0.143,0.000
+T33,retest,empty_grasp,365,365,True,shallow,309,309,True,7,12,12,1.500,0.930,0.020,0.000
+T36,retest,empty_grasp,384,384,True,shallow,312,312,True,10,17,17,1.500,1.053,0.077,0.000
+T46,retest,timeout(end of data),793,793,True,shallow,573,573,True,59,115,115,1.500,1.417,0.034,0.000
+T47,retest,empty_grasp,702,702,True,shallow,649,649,True,13,25,25,1.500,0.880,0.053,0.000

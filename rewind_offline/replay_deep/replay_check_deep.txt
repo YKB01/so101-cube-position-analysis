@@ -1,0 +1,9 @@
+replay check, mode=deep, max step 1.5 deg/tick, 29 failed trials
+trigger frame equals the offline analysis: 29/29  ([])
+target frame equals the offline analysis: 29/29  ([])
+levels: {'original': 25, 'progress_le_0.2': 2, 'start_pose': 2}
+max command change per tick over all trials: 1.5000 deg (limit 1.5)
+actual ticks == planned ticks: 29/29
+final error (simulated plant, lag alpha 0.3): max 1.48 deg, normalised max 0.046 (tau 0.449)
+waypoints: median 42; duration median 2.6 s, max 14.0 s
+first waypoint = trigger state: max deviation 0.00 deg

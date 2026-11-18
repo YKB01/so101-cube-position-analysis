@@ -1,0 +1,30 @@
+trial,dataset,trigger_type,trigger_frame,offline_trigger_frame,trigger_match,level,target_frame,offline_target_frame,target_match,n_waypoints,planned_ticks,actual_ticks,max_cmd_jump_deg,final_err_max_deg,final_err_norm,first_wp_dist_to_trigger_state
+E00,eval_expert_smooth,empty_grasp,280,280,True,original,135.000,135.000,True,34,63,63,1.500,1.348,0.040,0.000
+E01,eval_expert_smooth,empty_grasp,275,275,True,progress_le_0.2,102.000,102.000,True,65,128,128,1.500,1.329,0.030,0.000
+E02,eval_expert_smooth,empty_grasp,277,277,True,original,139.000,139.000,True,33,66,66,1.500,1.143,0.025,0.000
+E03,eval_expert_smooth,empty_grasp,306,306,True,original,169.000,169.000,True,33,66,66,1.500,1.293,0.033,0.000
+E04,eval_expert_smooth,empty_grasp,319,319,True,original,208.000,208.000,True,23,44,44,1.500,1.281,0.026,0.000
+E05,eval_expert_smooth,empty_grasp,321,321,True,original,176.000,176.000,True,39,76,76,1.500,1.360,0.028,0.000
+E06,eval_expert_smooth,empty_grasp,324,324,True,original,194.000,194.000,True,28,54,54,1.500,1.483,0.033,0.000
+E07,eval_expert_smooth,empty_grasp,328,328,True,original,206.000,206.000,True,27,51,51,1.500,1.409,0.032,0.000
+E12,eval_expert_smooth,empty_grasp,305,305,True,original,161.000,161.000,True,40,76,76,1.500,1.084,0.028,0.000
+E13,eval_expert_smooth,empty_grasp,301,301,True,original,160.000,160.000,True,32,61,61,1.500,1.108,0.025,0.000
+E14,eval_expert_smooth,empty_grasp,305,305,True,original,151.000,151.000,True,42,81,81,1.500,1.239,0.034,0.000
+E15,eval_expert_smooth,empty_grasp,308,308,True,original,152.000,152.000,True,50,101,101,1.500,1.093,0.028,0.000
+E16,eval_expert_smooth,empty_grasp,337,337,True,original,181.000,181.000,True,33,63,63,1.500,1.351,0.039,0.000
+E18,eval_expert_smooth,empty_grasp,349,349,True,original,188.000,188.000,True,31,62,62,1.500,1.302,0.031,0.000
+E20,eval_expert_smooth,empty_grasp,307,307,True,original,162.000,162.000,True,41,79,79,1.500,1.237,0.029,0.000
+E21,eval_expert_smooth,empty_grasp,314,314,True,original,173.000,173.000,True,38,72,72,1.500,1.077,0.022,0.000
+E22,eval_expert_smooth,empty_grasp,289,289,True,original,145.000,145.000,True,43,84,84,1.500,1.285,0.032,0.000
+E23,eval_expert_smooth,empty_grasp,298,298,True,original,149.000,149.000,True,45,88,88,1.500,1.317,0.031,0.000
+T08,retest,empty_grasp,236,236,True,progress_le_0.2,106.000,106.000,True,57,113,113,1.500,1.138,0.034,0.000
+T17,retest,empty_grasp,289,289,True,original,154.000,154.000,True,46,86,86,1.500,1.094,0.026,0.000
+T18,retest,empty_grasp,334,334,True,original,159.000,159.000,True,43,75,75,1.500,1.182,0.027,0.000
+T19,retest,empty_grasp,323,323,True,original,143.000,143.000,True,50,89,89,1.500,1.433,0.030,0.000
+T21,retest,timeout(end of data),619,619,True,start_pose,,,True,167,411,411,1.500,1.331,0.019,0.000
+T24,retest,empty_grasp,331,331,True,original,151.000,151.000,True,47,85,85,1.500,1.333,0.046,0.000
+T29,retest,empty_grasp,363,363,True,original,163.000,163.000,True,49,91,91,1.500,1.310,0.031,0.000
+T33,retest,empty_grasp,365,365,True,original,137.000,137.000,True,65,121,121,1.500,1.316,0.039,0.000
+T36,retest,empty_grasp,384,384,True,original,158.000,158.000,True,65,124,124,1.500,1.052,0.028,0.000
+T46,retest,timeout(end of data),793,793,True,start_pose,,,True,164,420,420,1.500,1.263,0.019,0.000
+T47,retest,empty_grasp,702,702,True,original,587.000,587.000,True,31,60,60,1.500,1.057,0.031,0.000

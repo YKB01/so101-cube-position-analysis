@@ -162,6 +162,11 @@ def main():
                   p_shallow=P_SHALLOW, p_deep=P_DEEP, shallow_lead_s=1.0,
                   deep_min_gap_s=DEEP_MIN_GAP_S, deep_fallback_progress=DEEP_FALLBACK_PROGRESS,
                   rewind_resample_min_step_deg=2.0, rewind_max_step_deg_default=1.5,
+                  empty_grasp_threshold=4.2, empty_grasp_settle_frames=30, empty_grasp_window_frames=5,
+                  close_open_level=30.0, close_closed_level=15.0, home_dist_deg=50.0, episode_timeout_s=30.0, buffer_s=15.0,
+                  gripper_open_value=float(np.median(g_all[g_all >= 44])),
+                  gripper_open_value_definition="median gripper reading over the open plateau (>= 44) of the 50 expert demos",
+                  joint_limits_expert=dict(min=[float(x) for x in q_all.min(axis=0)], max=[float(x) for x in q_all.max(axis=0)]),
                   start_pose=[float(x) for x in np.median(M[M.phase == "pre_motion"][[f"q{i}" for i in range(5)]].to_numpy(float), axis=0)],
                   start_pose_definition="per-joint median of the 5 arm joints over the idle frames before the arm-motion onset, all 50 expert demos",
                   units_note="not read from the recording configuration; inferred: LeRobot SOFollowerConfig.use_degrees default True "

@@ -13,6 +13,32 @@
   "deep_fallback_progress": 0.2,
   "rewind_resample_min_step_deg": 2.0,
   "rewind_max_step_deg_default": 1.5,
+  "empty_grasp_threshold": 4.2,
+  "empty_grasp_settle_frames": 30,
+  "empty_grasp_window_frames": 5,
+  "close_open_level": 30.0,
+  "close_closed_level": 15.0,
+  "home_dist_deg": 50.0,
+  "episode_timeout_s": 30.0,
+  "buffer_s": 15.0,
+  "gripper_open_value": 57.35293960571289,
+  "gripper_open_value_definition": "median gripper reading over the open plateau (>= 44) of the 50 expert demos",
+  "joint_limits_expert": {
+    "min": [
+      -40.879119873046875,
+      -103.78022003173828,
+      -94.4175796508789,
+      49.758243560791016,
+      -15.076923370361328
+    ],
+    "max": [
+      8.087912559509277,
+      73.97801971435547,
+      96.79120635986328,
+      101.53845977783203,
+      13.758241653442383
+    ]
+  },
   "start_pose": [
     -2.373626470565796,
     -103.16483306884766,

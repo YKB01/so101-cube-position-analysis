@@ -1,0 +1,9 @@
+replay check, mode=shallow, max step 1.5 deg/tick, 29 failed trials
+trigger frame equals the offline analysis: 29/29  ([])
+target frame equals the offline analysis: 29/29  ([])
+levels: {'shallow': 29}
+max command change per tick over all trials: 1.5000 deg (limit 1.5)
+actual ticks == planned ticks: 29/29
+final error (simulated plant, lag alpha 0.3): max 1.45 deg, normalised max 0.252 (tau 0.449)
+waypoints: median 10; duration median 0.6 s, max 3.8 s
+first waypoint = trigger state: max deviation 0.00 deg
