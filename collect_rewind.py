@@ -236,6 +236,10 @@ class Collector:
                 self.teleop = make_teleoperator_from_config(SO101LeaderConfig(port=cfg["leader_port"], id=cfg["leader_id"]))
                 self.teleop.connect()
         else:
+            # config registries: the parser resolves --robot.type / --teleop.type / camera types through these imports (as in lerobot-rollout)
+            from lerobot.cameras.opencv import OpenCVCameraConfig  # noqa: F401
+            from lerobot.robots import so_follower  # noqa: F401
+            from lerobot.teleoperators import so_leader  # noqa: F401
             from lerobot.configs import parser
             from lerobot.rollout import RolloutConfig, build_rollout_context
             from lerobot.utils.action_interpolator import ActionInterpolator
@@ -247,9 +251,10 @@ class Collector:
                     f"--policy.temporal_ensemble_coeff={cfg['temporal_ensemble_coeff']}", f"--device={cfg['device']}",
                     "--inference.type=sync", "--strategy.type=base", f"--task={cfg['task']}", f"--fps={int(self.fps)}", "--play_sounds=false"]
 
-            @parser.wrap()
-            def _parse(c: RolloutConfig):
+            def _parse(c):
                 return c
+            _parse.__annotations__ = {"c": RolloutConfig}       # this file uses postponed annotations; lerobot's parser needs the real class
+            _parse = parser.wrap()(_parse)
             old = sys.argv
             sys.argv = [old[0]] + argv
             try:
