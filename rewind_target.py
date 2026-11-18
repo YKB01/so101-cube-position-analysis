@@ -196,3 +196,50 @@ def select_rewind_target_deep(buffer_states, trigger_idx, index: RewindIndex, pa
         return DeepResult("progress_le_0.2", i, b[i, :N_ARM].copy(), float(dist[i]), float(index.progress[nn[i]]), shallow_idx, original_idx,
                           None if shallow_idx is None else shallow_idx - i)
     return DeepResult("start_pose", None, np.asarray(params["start_pose"], float), None, None, shallow_idx, original_idx, None)
+
+
+# ------------------------------------------------------------------------------------------------ rewind path planning
+def resample_path(points, min_step_deg):
+    """
+    Indices of the points to keep when travelling along `points` (N, D) in the given order: the first point, then every point whose
+    joint-space (Euclidean) distance from the last kept point is >= min_step_deg, and always the final point. Standing still and small
+    back-and-forth adjustments (which return close to the last kept point) are skipped.
+    """
+    pts = np.asarray(points, float)
+    n = len(pts)
+    if n == 0:
+        return []
+    keep, last = [0], pts[0]
+    for i in range(1, n - 1):
+        if np.linalg.norm(pts[i] - last) >= min_step_deg:
+            keep.append(i); last = pts[i]
+    if n > 1:
+        keep.append(n - 1)
+    return keep
+
+
+def plan_rewind_path(buffer_states, trigger_idx, target_idx, params: dict, target_pose=None, resample=True):
+    """
+    Waypoints (K, 5) for the rewind: start at the trigger state, travel back along the recorded measured trajectory to the target.
+    target_idx: index in buffer_states; or None for the start pose, in which case the whole cache is replayed backwards and the
+    final waypoint is target_pose (params["start_pose"] when not given), reached by interpolation (the controller interpolates between waypoints).
+    resample=True merges points closer than params["rewind_resample_min_step_deg"] (joint-space distance); False keeps every frame.
+    """
+    b = np.asarray(buffer_states, float)[:, :N_ARM]
+    lo = 0 if target_idx is None else int(target_idx)
+    seg = b[lo: trigger_idx + 1][::-1]
+    if resample:
+        seg = seg[resample_path(seg, params["rewind_resample_min_step_deg"])]
+    if target_idx is None:
+        pose = np.asarray(params["start_pose"] if target_pose is None else target_pose, float)
+        seg = np.vstack([seg, pose[None]])
+    return seg
+
+
+def estimate_rewind_steps(waypoints, max_step_deg):
+    """Control steps needed to pass the waypoints with at most max_step_deg change per joint per step (>= 1 step per segment)."""
+    w = np.asarray(waypoints, float)
+    if len(w) < 2:
+        return 0
+    d = np.abs(np.diff(w, axis=0)).max(axis=1)
+    return int(np.maximum(1, np.ceil(d / max_step_deg)).sum())

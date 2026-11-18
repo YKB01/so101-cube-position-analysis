@@ -161,6 +161,7 @@ def main():
                   gripper_open_threshold=GRIPPER_OPEN_THRESHOLD, gripper_open_threshold_grasp_detection=GRASP_DETECTION_OPEN,
                   p_shallow=P_SHALLOW, p_deep=P_DEEP, shallow_lead_s=1.0,
                   deep_min_gap_s=DEEP_MIN_GAP_S, deep_fallback_progress=DEEP_FALLBACK_PROGRESS,
+                  rewind_resample_min_step_deg=2.0, rewind_max_step_deg_default=1.5,
                   start_pose=[float(x) for x in np.median(M[M.phase == "pre_motion"][[f"q{i}" for i in range(5)]].to_numpy(float), axis=0)],
                   start_pose_definition="per-joint median of the 5 arm joints over the idle frames before the arm-motion onset, all 50 expert demos",
                   units_note="not read from the recording configuration; inferred: LeRobot SOFollowerConfig.use_degrees default True "

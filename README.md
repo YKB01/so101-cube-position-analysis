@@ -101,3 +101,8 @@ progress <= p; `select_rewind_target_lead(...)` is the time-based shallow varian
 `select_rewind_target_deep` in `rewind_target.py`: original deep target (progress <= 0.4); if it is less than 2.0 s earlier than the time-rule shallow target,
 the last state with progress <= 0.2 that is at least 2.0 s earlier; otherwise the start pose (median of the idle expert frames before the arm moves). The
 result records which level was used. `python rewind_offline/phase0_deep_fix.py` re-runs the 29 failed trajectories (`phase0_deep_fix.csv`, `phase0_summary.txt`, `phase0_figB_four_trials.png`).
+
+Replay path (phase 0 addendum): `plan_rewind_path` replays the recorded measured trajectory backwards and merges waypoints closer than
+`rewind_resample_min_step_deg` (2.0 deg, joint-space distance) so that standing still and small back-and-forth adjustments are skipped;
+`estimate_rewind_steps` gives the number of control steps at a per-joint limit (default 1.5 deg/step). Start-pose targets (`level = "start_pose"`)
+are not discarded: the level is stored in the per-episode metadata so that results can be reported with and without them.
