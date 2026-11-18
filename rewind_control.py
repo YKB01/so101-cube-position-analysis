@@ -111,16 +111,29 @@ class RewindController:
 
 
 class SettleDetector:
-    def __init__(self, tol_deg: float, n_consec: int, timeout_ticks: int):
+    """
+    'settled' when either every joint error stays below tol_deg for n_consec ticks, or - for poses with a gravity-induced steady-state error -
+    the arm stands still (no joint moves more than still_deg per tick) for n_consec ticks while the error is below max_err_deg.
+    'timeout' after timeout_ticks. The error actually reached is always reported by the caller, not hidden by this test.
+    """
+
+    def __init__(self, tol_deg: float, n_consec: int, timeout_ticks: int, still_deg: float | None = None, max_err_deg: float | None = None):
         self.tol, self.n, self.timeout = tol_deg, n_consec, timeout_ticks
-        self.ok, self.ticks = 0, 0
+        self.still_deg, self.max_err = still_deg, max_err_deg
+        self.ok, self.still, self.ticks, self.prev = 0, 0, 0, None
 
     def update(self, measured5, target5) -> str | None:
         """-> 'settled' | 'timeout' | None"""
         self.ticks += 1
-        err = np.max(np.abs(np.asarray(measured5, float) - np.asarray(target5, float)))
+        m = np.asarray(measured5, float)
+        err = np.max(np.abs(m - np.asarray(target5, float)))
         self.ok = self.ok + 1 if err <= self.tol else 0
+        moving = np.max(np.abs(m - self.prev)) if self.prev is not None else np.inf
+        self.prev = m.copy()
+        self.still = self.still + 1 if (self.still_deg is not None and moving <= self.still_deg) else 0
         if self.ok >= self.n:
+            return "settled"
+        if self.max_err is not None and self.still >= self.n and err <= self.max_err:
             return "settled"
         return "timeout" if self.ticks >= self.timeout else None
 

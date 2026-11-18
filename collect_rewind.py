@@ -51,7 +51,7 @@ META_COLUMNS = [
     "cube_start_x", "cube_start_y", "trigger_type", "trigger_frame", "trigger_time_s",
     "target_buffer_index", "target_episode_frame", "target_time_s", "target_progress", "target_nn_distance",
     "rewind_planned_s", "rewind_actual_s", "n_waypoints", "joint_distance_deg", "settled",
-    "final_err_max_deg", "final_err_norm", "final_err_norm_over_tau",
+    "final_err_max_deg", "final_err_norm", "final_err_norm_over_tau", "final_err_shoulder_pan", "final_err_shoulder_lift", "final_err_elbow_flex", "final_err_wrist_flex", "final_err_wrist_roll",
     "cube_before_x", "cube_before_y", "cube_after_x", "cube_after_y", "cube_shift_px",
     "align_err_max_deg", "align_retries", "human_s", "discarded", "discard_reason", "autonomous_dir"]
 
@@ -655,7 +655,7 @@ class Collector:
                 limit = ticks + int(c["max_rewind_s"] * self.fps)
             self.sleep_to(t0)
         final5 = wp[-1]
-        det = RC.SettleDetector(c["settle_tol_deg"], c["settle_consec"], int(c["settle_timeout_s"] * self.fps))
+        det = RC.SettleDetector(c["settle_tol_deg"], c["settle_consec"], int(c["settle_timeout_s"] * self.fps), c["settle_still_deg"], c["settle_max_err_deg"])
         res = None
         while res is None:
             t0 = time.perf_counter()
@@ -667,6 +667,7 @@ class Collector:
             self.sleep_to(t0)
         err = np.abs(meas[:5] - final5)
         nerr = RC.normalised_error(meas[:5] - final5, self.sigma)
+        meta.update({f"final_err_{k.split('.')[0]}": float(meas[i] - final5[i]) for i, k in enumerate(ARM_KEYS)})
         meta.update(rewind_actual_s=time.perf_counter() - t_begin, settled=(res == "settled"), final_err_max_deg=float(err.max()),
                     final_err_norm=nerr, final_err_norm_over_tau=nerr / p["tau"])
         self.final_report = dict(err_per_joint=dict(zip(ARM_KEYS, err.round(3))), norm=nerr, tau=p["tau"], settled=res)
@@ -988,7 +989,7 @@ def _collector_methods():
         # 1) move the follower (step limited) and let it settle
         self.phase = "move"
         ctrl = RC.RewindController([tgt6[:5]], cur[:5], c["max_step_deg"]); gr = RC.GripperRamp(cur[5], tgt6[5], c["gripper_step"])
-        det = RC.SettleDetector(c["settle_tol_deg"], c["settle_consec"], int(c["settle_timeout_s"] * self.fps))
+        det = RC.SettleDetector(c["settle_tol_deg"], c["settle_consec"], int(c["settle_timeout_s"] * self.fps), c["settle_still_deg"], c["settle_max_err_deg"])
         res = None
         while res is None:
             t0 = time.perf_counter(); self.poll_keys(allow_discard=False)

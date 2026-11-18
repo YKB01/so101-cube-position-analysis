@@ -1,0 +1,6 @@
+run,episode,source,mode,trigger,level,n_waypoints,joint_distance_deg,planned_s,actual_s,settled,final_err_max_deg,final_err_norm,final_err_over_tau,lag_median_deg,lag_max_deg
+20261118_141129,1,E12,deep,auto_stop_before_grasp,progress_le_0.2,50,146.404,3.133,3.384,True,1.231,0.102,0.227,6.198,7.912
+20261118_141129,2,E12,deep,auto_stop_before_grasp,progress_le_0.2,49,146.267,3.133,3.385,True,1.231,0.103,0.231,6.154,7.824
+20261118_141242,1,E12,shallow,auto_stop_before_grasp,shallow,17,40.463,0.967,4.023,False,3.429,0.056,0.125,6.505,7.912
+20261118_141335,1,T19,deep,auto_stop_before_grasp,progress_le_0.2,61,159.961,3.967,4.187,True,0.791,0.093,0.207,5.275,7.824
+20261118_141404,1,E01,deep,auto_stop_before_grasp,progress_le_0.2,47,122.986,3.033,3.248,True,0.879,0.078,0.175,5.363,7.033
