@@ -1,0 +1,33 @@
+{
+  "_comment": "PROPOSED fixed regions (x0, y0, x1, y1) in the 640x480 first frame; to be confirmed",
+  "table": [
+    190,
+    262,
+    400,
+    335
+  ],
+  "near_cube": [
+    350,
+    165,
+    430,
+    245
+  ],
+  "bg_desk": [
+    190,
+    55,
+    400,
+    125
+  ],
+  "bg_top_strip": [
+    0,
+    0,
+    640,
+    40
+  ],
+  "bg_sheet_right": [
+    480,
+    70,
+    640,
+    290
+  ]
+}
