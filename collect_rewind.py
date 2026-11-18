@@ -57,7 +57,8 @@ META_COLUMNS = [
     "align_err_max_deg", "align_retries", "human_s", "discarded", "discard_reason", "autonomous_dir",
     # covariates (camera stays on automatic exposure; nothing is locked)
     "first_frame_table_gray", "first_frame_sheet_gray", "first_frame_gray_mean", "first_frame_table_rb", "outside_time_window",
-    "autonomous_dt_mean_ms", "autonomous_dt_max_ms", "human_dt_mean_ms", "human_dt_max_ms"] + [f"cam_{c}" for c in LP.CONTROLS]
+    "autonomous_dt_mean_ms", "autonomous_dt_max_ms", "human_dt_mean_ms", "human_dt_max_ms",
+    "queue_len_at_start", "queue_remaining_at_trigger", "queue_len_after_clear"] + [f"cam_{c}" for c in LP.CONTROLS]
 
 
 # ====================================================================================================== config
@@ -547,7 +548,13 @@ class Collector:
             meta.update(self.episode_covariates(rgb))
         if self.dry:
             return self.autonomous_dry(meta)
-        self.engine.reset(); self.interp.reset()
+        self.clear_policy()
+        q0 = self.policy_queue_len()
+        if q0:                                            # must be empty before the first action of the episode
+            self.clear_policy(); q0 = self.policy_queue_len()
+            if q0:
+                raise RuntimeError(f"the policy action queue is not empty at the start of the episode ({q0} actions)")
+        meta["queue_len_at_start"] = "" if q0 is None else q0
         from lerobot.rollout.strategies.core import send_next_action
         print(f"\n=== episode {meta['episode_id']}: AUTONOMOUS (cube at {meta['cube_start_x']:.0f},{meta['cube_start_y']:.0f}); "
               f"[t] manual trigger  [x] discard  [SPACE] e-stop ===", flush=True)
@@ -578,6 +585,15 @@ class Collector:
                 return
             frame += 1
             self.sleep_to(t0)
+
+    def policy_queue_len(self):
+        """Number of actions left in the policy's action queue (ACT with n_action_steps > 1 and no temporal ensembling); None if the policy has no queue."""
+        q = getattr(self.ctx.policy.policy, "_action_queue", None)
+        return None if q is None else len(q)
+
+    def clear_policy(self):
+        """Reset the policy (empties the ACT action queue / temporal ensembler), the processors and the action interpolator."""
+        self.engine.reset(); self.interp.reset()
 
     def episode_covariates(self, rgb):
         """First-frame table gray (and other lighting numbers), read-back of the camera controls while the camera streams, time-window flag."""
@@ -641,6 +657,13 @@ class Collector:
     def triggered(self, meta, ed):
         c = self.cfg
         self.phase = "triggered"
+        if not self.dry and self.ctx is not None:
+            qr = self.policy_queue_len()
+            meta["queue_remaining_at_trigger"] = "" if qr is None else qr
+            self.clear_policy()                           # no action of the old chunk is executed during the rewind or the human correction
+            qa = self.policy_queue_len()
+            meta["queue_len_after_clear"] = "" if qa is None else qa
+            print(f"policy queue cleared ({qr} actions were left)", flush=True)
         obs = self.get_obs(); state = vec6(obs)
         rgb = obs.get("front")
         if rgb is not None:
@@ -997,10 +1020,14 @@ def reference_curves(model: str):
     if cache.exists():
         z = np.load(cache)
         return z["curves"], z["grasp_t"]
-    rt = pd.read_csv(HERE / "retest_analysis/trial_table.csv")
+    if model in ("baseline_default", "baseline_smooth"):       # 11/4 evaluations of the baseline: default settings (n_action_steps=100) / smooth (1, 0.01)
+        f, _ = G.load_frames("eval_expert_default" if model == "baseline_default" else "eval_expert_smooth")
+        states = [e.sort_values("frame_index")[[f"state:{j}" for j in G.ARM_JOINTS] + [f"state:{G.GRIPPER}"]].to_numpy(float) for _, e in f.groupby("episode_index")]
+    else:
+        rt = pd.read_csv(HERE / "retest_analysis/trial_table.csv")
+        states = [load_trial_states(tid) for tid in rt[rt.model == model].trial_id]
     curves, gts = [], []
-    for tid in rt[rt.model == model].trial_id:
-        S = load_trial_states(tid)
+    for S in states:
         gf = G.detect_first_grasp(S[:, 5])["grasp_frame"]
         if np.isnan(gf):
             continue
@@ -1218,7 +1245,7 @@ def _collector_methods():
         self.autolog = AutoLog(ed, self.fps, (rgb.shape[1], rgb.shape[0]) if rgb is not None else None)
         cov = self.episode_covariates(rgb) if rgb is not None else {}
         self.engine.reset(); self.interp.reset()
-        T, dts, t_obs, t_inf, states, actions = [], [], [], [], [], []
+        T, dts, t_obs, t_inf, states, actions, qlen = [], [], [], [], [], [], []
         last_action, early = None, False
         print(f"=== episode {eid} (cube at {cx:.0f},{cy:.0f}) running {c['policy_only_episode_s']:.0f} s ===", flush=True)
         t_start = time.perf_counter(); t_prev = None
@@ -1232,6 +1259,7 @@ def _collector_methods():
                 state = vec6(obs)
                 op = self.processors.robot_observation_processor(obs)
                 ti = time.perf_counter(); ad = send_next_action(op, obs, self.ctx, self.interp); t_inf.append((time.perf_counter() - ti) * 1e3)
+                qlen.append(-1 if self.policy_queue_len() is None else self.policy_queue_len())
                 if ad is not None:
                     last_action = np.array([ad[k] for k in KEYS6], float); self.last_cmd6 = last_action
                     if self.ds is not None:
@@ -1247,7 +1275,9 @@ def _collector_methods():
         if self.ds is not None and self.ds.has_pending_frames():
             self.ds.save_episode()
         S = np.array(states); dts = np.array(dts[1:]); t_inf, t_obs = np.array(t_inf), np.array(t_obs)
-        np.savez(ed / "ticks.npz", t=np.array(T), dt_ms=np.array([0.0] + list(dts)), obs_ms=t_obs, infer_ms=t_inf)
+        np.savez(ed / "ticks.npz", t=np.array(T), dt_ms=np.array([0.0] + list(dts)), obs_ms=t_obs, infer_ms=t_inf, queue_len=np.array(qlen))
+        inf_ticks = np.flatnonzero(t_inf > 8.0)            # ticks on which the policy network ran (a pop from the action queue costs < 1 ms)
+        inf_gap = np.diff(inf_ticks)
         gd = G.detect_first_grasp(S[:, 5]); gf = gd["grasp_frame"]
         sp = np.r_[0.0, np.linalg.norm(np.diff(S[:, :5], axis=0), axis=1) * 30.0]
         row = dict(episode_id=eid, timestamp=datetime.now().isoformat(timespec="seconds"), cube_start_x=cx, cube_start_y=cy, duration_s=T[-1] if T else 0.0,
@@ -1257,13 +1287,17 @@ def _collector_methods():
                    slow_ticks_pct=100 * float((dts > c["slow_tick_factor"] * 1e3 / self.fps).mean()),
                    infer_ms_mean=t_inf.mean(), infer_ms_p50=np.median(t_inf), infer_ms_p95=np.percentile(t_inf, 95), infer_ms_max=t_inf.max(), obs_ms_mean=t_obs.mean(),
                    first_grasp_frame=gf, first_grasp_time_s=gf / 30 if not np.isnan(gf) else np.nan,
-                   mean_arm_speed_first10s=float(np.mean(sp[:300])), max_arm_speed=float(sp.max()))
+                   mean_arm_speed_first10s=float(np.mean(sp[:300])), max_arm_speed=float(sp.max()),
+                   n_inference_ticks=int(len(inf_ticks)), inference_gap_ticks_median=float(np.median(inf_gap)) if len(inf_gap) else float("nan"),
+                   queue_len_max=int(max(qlen)) if qlen else -1)
         self.summary_rows.append(row)
         pd.DataFrame(self.summary_rows).to_csv(self.out / "policy_only_summary.csv", index=False, float_format="%.3f")
         if not np.isnan(gf):
             self.curves.append(speed_curve(S[:, :5], int(gf)))
         print(f"   control {row['hz_mean']:.1f} Hz (p5 {row['hz_p5']:.1f}), slow ticks {row['slow_ticks_pct']:.1f}%, inference {row['infer_ms_mean']:.1f} ms mean / {row['infer_ms_p95']:.1f} p95 / {row['infer_ms_max']:.1f} max, "
               f"first close at {row['first_grasp_time_s']:.2f} s, mean arm speed first 10 s {row['mean_arm_speed_first10s']:.1f}", flush=True)
+        print(f"   network ran on {row['n_inference_ticks']} of {row['n_ticks']} ticks (median gap {row['inference_gap_ticks_median']:.0f} ticks; queue length up to {row['queue_len_max']}): "
+              f"{'open-loop chunks as expected for n_action_steps=100' if row['queue_len_max'] >= 50 else 'a new chunk every tick (temporal ensembling / n_action_steps=1)'}", flush=True)
 
     def policy_only_report(self):
         if not self.summary_rows:
@@ -1281,9 +1315,10 @@ def _collector_methods():
         tt = np.arange(-120, 16) / 30
         if m:
             rc, rg = reference_curves(m)
-            axs[0].plot(tt, np.nanmedian(rc, 0), color="#6250d6", lw=2, label=f"retest model {m} (median, n={len(rc)})")
+            ref_lab = f"retest model {m}" if m in ("R", "C") else f"11/4 evaluation, {m.replace('_', ' ')}"
+            axs[0].plot(tt, np.nanmedian(rc, 0), color="#6250d6", lw=2, label=f"{ref_lab} (median, n={len(rc)})")
             axs[0].fill_between(tt, np.nanpercentile(rc, 25, 0), np.nanpercentile(rc, 75, 0), color="#6250d6", alpha=0.18, lw=0)
-            lines.append(f"reference (retest model {m}, all positions, n={len(rg)}): first close median {np.median(rg):.2f} s (IQR {np.percentile(rg, 25):.2f}-{np.percentile(rg, 75):.2f}); "
+            lines.append(f"reference ({ref_lab}, all positions, n={len(rg)}): first close median {np.median(rg):.2f} s (IQR {np.percentile(rg, 25):.2f}-{np.percentile(rg, 75):.2f}); "
                          f"new run median {df.first_grasp_time_s.median():.2f} s")
             axs[1].boxplot([rg], positions=[0], widths=0.5, showfliers=False)
         for cv in self.curves:
@@ -1293,7 +1328,7 @@ def _collector_methods():
         axs[0].axvline(0, color="#52514e", lw=1); axs[0].set_xlabel("Time relative to first close (s)"); axs[0].set_ylabel("Arm speed (units/s)")
         axs[0].legend(frameon=False, fontsize=8); axs[0].set_title("Pre-grasp arm speed")
         axs[1].scatter(np.full(len(df), 1) + np.random.default_rng(0).uniform(-0.1, 0.1, len(df)), df.first_grasp_time_s, color="#eb6834")
-        axs[1].set_xticks([0, 1] if m else [1]); axs[1].set_xticklabels([f"retest {m}", "this run"] if m else ["this run"]); axs[1].set_ylabel("First close time (s)")
+        axs[1].set_xticks([0, 1] if m else [1]); axs[1].set_xticklabels([ref_lab.replace("11/4 evaluation, ", "11/4 "), "this run"] if m else ["this run"]); axs[1].set_ylabel("First close time (s)")
         fig.savefig(self.out / "policy_only_speed_curves.png", dpi=150, bbox_inches="tight"); plt.close(fig)
         (self.out / "policy_only_summary.txt").write_text("\n".join(lines) + "\n")
         print("\n" + "\n".join(lines), flush=True)

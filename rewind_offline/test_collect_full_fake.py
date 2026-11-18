@@ -35,7 +35,13 @@ def main(mode="deep"):
     cfg = CR.load_config(["--rewind_mode", mode, "--repo_id", "YKB0123/test_rewind_fake2", "--policy_path", "x", "--out_dir", str(tmp / "out"), "--fps", "30",
                           "--root", str(tmp / "main"), "--root_rewind_seg", str(tmp / "seg")])
     col = CR.Collector(cfg)
-    col.ctx = types.SimpleNamespace(data=types.SimpleNamespace(dataset_features=feats))
+    from collections import deque
+    from lerobot.utils.action_interpolator import ActionInterpolator
+    pol = types.SimpleNamespace(_action_queue=deque(range(37)))                  # 37 actions of the old chunk are still queued at the trigger
+    class _Eng:
+        def reset(self): pol._action_queue.clear()
+    col.engine, col.interp = _Eng(), ActionInterpolator(multiplier=1)
+    col.ctx = types.SimpleNamespace(data=types.SimpleNamespace(dataset_features=feats), policy=types.SimpleNamespace(policy=pol, inference=col.engine))
     trial = [t for t in S2.load_trials() if t["trial"] == "E12"][0]
     Q = trial["states"]; trig = 306
     col.robot = CamRobot(Q[trig]); col.start_pose6 = Q[0].copy(); col.last_cmd6 = Q[trig].copy()
@@ -55,6 +61,7 @@ def main(mode="deep"):
     col.wait_start(meta)
     col.human(meta)
     col.write_meta(meta)
+    print("queue: remaining at trigger", meta.get("queue_remaining_at_trigger"), "| after clear", meta.get("queue_len_after_clear"), "| queue now", len(pol._action_queue))
     print("\nmeta:", {k: (round(v, 3) if isinstance(v, float) else v) for k, v in meta.items() if k in ("level", "segment_episode_index", "saved_episode_index", "settled", "final_err_norm", "align_err_max_deg", "align_retries", "cube_before_x", "cube_after_x", "cube_shift_px", "human_s")})
     col.stack.close()
     from lerobot.datasets import LeRobotDataset

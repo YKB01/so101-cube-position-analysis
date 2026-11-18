@@ -206,8 +206,8 @@ def main():
     env = dict(os.environ, RT_ARGS=json.dumps(args), PYTHONUNBUFFERED="1")
     sys.path.insert(0, str(ROOT))
     import lighting_probe as LP
-    if not LP.inside_window(datetime.now(), "13:30-15:30"):
-        print(f"  WARNING: outside the protocol window 13:30-15:30 (now {datetime.now():%H:%M}); the trial is flagged.")
+    if not LP.inside_window(datetime.now(), LP.DEFAULT_WINDOW):
+        print(f"  WARNING: outside the protocol window {LP.DEFAULT_WINDOW} (now {datetime.now():%H:%M}); the trial is flagged.")
     cam = {}
     def _read_cam():                                   # camera controls read back while the policy runs (read only)
         time.sleep(18)
@@ -238,7 +238,7 @@ def main():
     meta = dict(trial_id=tid, position_id=row["position_id"], attempt=k, dataset_repo_id=actual_repo,
                 started_unix=started, ended_unix=ended, early_end_key=early.pressed, return_code=rc, placement=pl, inference=INFERENCE,
                 episode_time_s=EPISODE_TIME_S, chunks=summ)
-    meta["outside_time_window"] = not LP.inside_window(datetime.fromtimestamp(started), "13:30-15:30")
+    meta["outside_time_window"] = not LP.inside_window(datetime.fromtimestamp(started), LP.DEFAULT_WINDOW)
     meta["camera_controls"] = dict(cam)
     try:                                               # control-loop period from the logged policy-step times
         t = np.load(outdir / "chunks.npz")["t"].astype(float); dt = np.diff(t) * 1e3

@@ -3,7 +3,7 @@ Per-episode lighting covariates for the collection and test scripts (camera stay
   frame_lighting(rgb)         first-frame statistics: table gray (box in lighting_analysis/regions.json, red cube pixels excluded), window-side gray (bg_sheet_right),
                               whole-frame gray, table R/B
   read_camera_controls(dev)   read-back of the UVC controls with `v4l2-ctl --list-ctrls` (read only; returns {} if v4l2-ctl is not available)
-  inside_window(now, "13:30-15:30")
+  inside_window(now, DEFAULT_WINDOW)
 """
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 _REGIONS = {k: v for k, v in json.loads((HERE / "lighting_analysis/regions.json").read_text()).items() if not k.startswith("_")}
+DEFAULT_WINDOW = "10:00-16:00"          # daytime; the scripts only warn outside it
 CONTROLS = ["auto_exposure", "exposure_time_absolute", "exposure_dynamic_framerate", "white_balance_automatic", "white_balance_temperature", "gain",
             "backlight_compensation", "brightness", "contrast", "saturation", "gamma", "sharpness", "power_line_frequency"]
 
@@ -52,7 +53,7 @@ def read_camera_controls(device: str = "/dev/video0", timeout_s: float = 3.0) ->
     return vals
 
 
-def inside_window(now: datetime | None = None, window: str = "13:30-15:30") -> bool:
+def inside_window(now: datetime | None = None, window: str = DEFAULT_WINDOW) -> bool:
     now = now or datetime.now()
     a, b = window.split("-")
     h = lambda s: int(s[:2]) * 60 + int(s[3:])

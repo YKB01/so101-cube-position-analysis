@@ -1,0 +1,14 @@
+{
+  "n_action_steps": 100,
+  "temporal_ensemble_coeff": null,
+  "fps": 30,
+  "device": "cuda",
+  "time_window": "10:00-16:00",
+  "order_csv": "protocol/rewind_collect_order.csv",
+  "positions_json": "protocol/rewind_collect_positions.json",
+  "repo_id": "YKB0123/rewind_deep_20",
+  "repo_id_rewind_seg": "YKB0123/rewind_deep_20_rewind_seg",
+  "resume": false,
+  "streaming_encoding": true,
+  "encoder_threads": 2
+}
