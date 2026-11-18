@@ -53,5 +53,6 @@
   "slow_tick_factor": 1.5,
   "return_step_deg": 3.0,
   "align_trim_gain_per_s": 2.0,
-  "align_trim_max_deg": 15.0
+  "align_trim_max_deg": 15.0,
+  "dry_run_stop_before_grasp_s": 1.5
 }

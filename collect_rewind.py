@@ -523,9 +523,13 @@ class Collector:
     def autonomous_dry(self, meta):
         """Dry run: the follower replays a recorded failed trial (step-limited) so that a realistic state cache exists."""
         c = self.cfg
+        import analyze_grasp_points as G
         Q = load_trial_states(c["dry_run_source"])
+        gfr = G.detect_first_grasp(Q[:, 5])["grasp_frame"]
+        stop_frame = None if (np.isnan(gfr) or c["dry_run_stop_before_grasp_s"] <= 0) else int(gfr - c["dry_run_stop_before_grasp_s"] * 30)
         print(f"\n=== DRY RUN episode {meta['episode_id']}: first moving to the start of {c['dry_run_source']} then replaying it (step limit "
-              f"{c['dry_run_play_step_deg']} deg/tick). [t] trigger now  [SPACE] e-stop ===", flush=True)
+              f"{c['dry_run_play_step_deg']} deg/tick); the replay stops and triggers {c['dry_run_stop_before_grasp_s']} s of recording before the first grasp "
+              f"(frame {stop_frame}) so that the arm does not press on the table. [t] trigger now  [SPACE] e-stop ===", flush=True)
         step = c["dry_run_play_step_deg"]
         # 1) go to the first state
         obs = self.get_obs(); self.last_cmd6 = vec6(obs)
@@ -549,6 +553,8 @@ class Collector:
             fired = self.trigger.update(frame, state)
             if manual:
                 fired = "manual"
+            if fired is None and stop_frame is not None and ctrl.k >= stop_frame:
+                fired = "auto_stop_before_grasp"            # keep the replay above the table: stop before the recorded grasp
             if fired:
                 meta["trigger_type"], meta["trigger_frame"], meta["trigger_time_s"] = fired, frame, frame / self.fps
                 self.trigger_state6 = state
