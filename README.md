@@ -85,3 +85,14 @@ Both analyses reuse the grasp-frame rule and the "joint angles -> cube pixel pos
   approach is the first time after the speed peak that the arm speed stays below 20 units/s for 5 frames);
   `--stage metrics` computes per-episode metrics (`correction_metrics.csv`), summary tables, figures C/D/E, tests
   (Mann-Whitney U with rank-biserial effect size, threshold sensitivity) and `report_correction.md`.
+
+## Rewind-target selection (offline prototype)
+First step towards "failure -> automatic rewind -> human correction" on the real robot. `rewind_target.py` (repo root) is a
+LeRobot-free module: `select_rewind_target(buffer_states, trigger_idx, p, index, params)` returns the last cached state that is in
+distribution (nearest-neighbour distance to the 50 expert demos <= tau, joint states only), has an open gripper (>= 40) and an estimated task
+progress <= p; `select_rewind_target_lead(...)` is the time-based shallow variant (>= 1.0 s before the trigger). Everything else is in `rewind_offline/`:
+- `python rewind_offline/step1_build_index.py` builds `rewind_index.npz` / `rewind_params.json` (tau, progress, gripper thresholds; figures and log).
+- `python rewind_offline/step2_offline_targets.py` simulates rule-based triggers on the baseline-policy evaluation and the right-side retest
+  (29 failures, 43 successes), selects shallow / deep targets, and writes `rewind_targets.csv`, summaries, sensitivity tables and figures A-C.
+- `rewind_offline/report_rewind_offline.md` answers whether tau/progress are reliable, how many failures the triggers cover, whether the two
+  depths look different, and whether a 15 s cache is enough. Joint units are inferred (not read from the recording configuration).

@@ -1,0 +1,41 @@
+state names: ['shoulder_pan.pos', 'shoulder_lift.pos', 'elbow_flex.pos', 'wrist_flex.pos', 'wrist_roll.pos', 'gripper.pos'] | fps: 30 | episodes: 50 | frames: 29901
+      state:shoulder_pan.pos  state:shoulder_lift.pos  state:elbow_flex.pos  state:wrist_flex.pos  state:wrist_roll.pos  state:gripper.pos
+min                   -40.88                  -103.78                -94.42                 49.76                -15.08               2.56
+max                     8.09                    73.98                 96.79                101.54                 13.76              87.72
+mean                   -8.76                   -29.45                 21.86                 79.36                 -1.64              30.98
+std                    10.81                    70.09                 67.40                 16.74                  5.62              28.84
+units: meta/info.json lists only names (no unit field). In the installed LeRobot, SOFollowerConfig.use_degrees defaults to True -> arm joints are in degrees (MotorNormMode.DEGREES), the gripper in 0..100 (RANGE_0_100). The data agree: shoulder_lift spans -104..74, elbow 96..-94, which exceeds the -100..100 of the other normalisation mode only slightly and is a plausible degree range.
+
+motion onset (frames): median 81, min 42, max 129; first grasp: median 218, min 160, max 275
+frames by phase: {'post_grasp': 19104, 'approach': 6750, 'pre_motion': 4047} | idle share of the pre-grasp part: 37.5%
+per-joint std (normalisation): {'shoulder_pan.pos': np.float64(10.81), 'shoulder_lift.pos': np.float64(70.09), 'elbow_flex.pos': np.float64(67.4), 'wrist_flex.pos': np.float64(16.74), 'wrist_roll.pos': np.float64(5.62)}
+
+leave-one-episode-out nearest-neighbour distance (normalised units):
+                                                                                     variant     n   p50   p90   p95   p99   max
+V1 all pre-grasp frames (incl. idle start) vs pre-grasp frames  [all pre-grasp, sensitivity] 10797 0.165 0.329 0.404 0.620 0.831
+                              V2 moving pre-grasp frames only vs pre-grasp frames  [DEFAULT]  6750 0.187 0.368 0.449 0.724 0.831
+                                                V3 all frames incl. post-grasp vs all frames 29901 0.123 0.302 0.397 0.637 0.896
+
+tau (default: 95th percentile, moving pre-grasp frames) = 0.4486; 90th = 0.3680; 99th = 0.7241; sensitivity tau_V1 (all pre-grasp frames, 95th) = 0.4036
+tau expressed per joint (tau * sigma, one joint alone):  {'shoulder_pan.pos': np.float64(4.8), 'shoulder_lift.pos': np.float64(31.4), 'elbow_flex.pos': np.float64(30.2), 'wrist_flex.pos': np.float64(7.5), 'wrist_roll.pos': np.float64(2.5)}
+share of frames above tau by phase: {'approach': 0.05, 'pre_motion': 0.0}
+per-episode share of frames above tau: max 0.393
+
+progress estimate (leave-one-episode-out): MAE all pre-grasp frames = 0.068; moving frames only = 0.091
+  median abs error moving = 0.060; 90th pct = 0.220
+MAE by true-progress bin (moving frames):
+                mean  size
+progress                  
+(-0.001, 0.2]  0.042  1369
+(0.2, 0.4]     0.053  1343
+(0.4, 0.6]     0.084  1338
+(0.6, 0.8]     0.122  1343
+(0.8, 1.0]     0.153  1357
+median approach duration = 4.47 s -> MAE 0.41 s equivalent
+classification 'progress <= 0.9' on moving frames: agreement 0.871; true<=p but est>p 0.052; true>p but est<=p 0.076
+classification 'progress <= 0.4' on moving frames: agreement 0.943; true<=p but est>p 0.026; true>p but est<=p 0.032
+
+gripper reading: closed mode median 3.0; open plateau (>=44) median 57.4; frames between 8 and 44 (transitions) = 8.4% of all, 4.7% of pre-grasp frames
+rewind open threshold = 40 (open plateau starts ~44); grasp detection keeps 30; frames in 30-40 band (pre-grasp): 1.3%
+
+saved to /home/ykb/cube_position_analysis/rewind_offline

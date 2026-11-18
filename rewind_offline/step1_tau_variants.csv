@@ -1,0 +1,4 @@
+variant,n,p50,p90,p95,p99,max
+"V1 all pre-grasp frames (incl. idle start) vs pre-grasp frames  [all pre-grasp, sensitivity]",10797,0.1650,0.3288,0.4036,0.6198,0.8312
+V2 moving pre-grasp frames only vs pre-grasp frames  [DEFAULT],6750,0.1869,0.3680,0.4486,0.7241,0.8312
+V3 all frames incl. post-grasp vs all frames,29901,0.1230,0.3020,0.3966,0.6365,0.8957

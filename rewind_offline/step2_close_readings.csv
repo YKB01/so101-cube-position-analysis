@@ -1,0 +1,107 @@
+dataset,trial,success,k,frame,group,reading
+eval_expert_smooth,E00,0,0,250,failure: other closes,3.632
+eval_expert_smooth,E00,0,1,583,failure: other closes,4.284
+eval_expert_smooth,E01,0,0,245,failure: other closes,3.606
+eval_expert_smooth,E01,0,1,581,failure: other closes,4.207
+eval_expert_smooth,E02,0,0,247,failure: other closes,3.248
+eval_expert_smooth,E02,0,1,579,failure: other closes,3.951
+eval_expert_smooth,E03,0,0,276,failure: other closes,3.005
+eval_expert_smooth,E03,0,1,613,failure: other closes,3.606
+eval_expert_smooth,E04,0,0,289,failure: other closes,2.813
+eval_expert_smooth,E04,0,1,645,failure: other closes,2.762
+eval_expert_smooth,E05,0,0,291,failure: other closes,2.775
+eval_expert_smooth,E05,0,1,647,failure: other closes,2.749
+eval_expert_smooth,E06,0,0,294,failure: other closes,2.749
+eval_expert_smooth,E06,0,1,655,failure: other closes,2.685
+eval_expert_smooth,E07,0,0,298,failure: other closes,2.903
+eval_expert_smooth,E07,0,1,659,failure: other closes,2.749
+eval_expert_smooth,E08,1,0,285,held cube (last close of a successful trial),5.639
+eval_expert_smooth,E09,1,0,254,held cube (last close of a successful trial),5.294
+eval_expert_smooth,E10,1,0,247,held cube (last close of a successful trial),5.320
+eval_expert_smooth,E11,1,0,252,held cube (last close of a successful trial),6.125
+eval_expert_smooth,E12,0,0,275,failure: other closes,2.877
+eval_expert_smooth,E12,0,1,637,failure: other closes,2.788
+eval_expert_smooth,E13,0,0,271,failure: other closes,2.775
+eval_expert_smooth,E14,0,0,275,failure: other closes,2.749
+eval_expert_smooth,E14,0,1,637,failure: other closes,2.711
+eval_expert_smooth,E15,0,0,278,failure: other closes,2.788
+eval_expert_smooth,E15,0,1,643,failure: other closes,2.788
+eval_expert_smooth,E16,0,0,307,failure: other closes,3.043
+eval_expert_smooth,E16,0,1,656,failure: other closes,3.568
+eval_expert_smooth,E17,1,0,272,held cube (last close of a successful trial),5.435
+eval_expert_smooth,E18,0,0,319,failure: other closes,3.504
+eval_expert_smooth,E18,0,1,685,failure: other closes,4.795
+eval_expert_smooth,E19,1,0,268,held cube (last close of a successful trial),5.806
+eval_expert_smooth,E20,0,0,277,failure: other closes,3.031
+eval_expert_smooth,E21,0,0,284,failure: other closes,3.082
+eval_expert_smooth,E21,0,1,653,failure: other closes,2.813
+eval_expert_smooth,E22,0,0,259,failure: other closes,3.184
+eval_expert_smooth,E22,0,1,622,failure: other closes,2.877
+eval_expert_smooth,E23,0,0,268,failure: other closes,2.992
+eval_expert_smooth,E23,0,1,634,failure: other closes,2.877
+retest,T01,1,0,204,held cube (last close of a successful trial),5.013
+retest,T02,1,0,221,earlier close of a successful trial,10.192
+retest,T02,1,1,659,held cube (last close of a successful trial),4.936
+retest,T03,1,0,224,earlier close of a successful trial,2.877
+retest,T03,1,1,628,held cube (last close of a successful trial),5.013
+retest,T04,1,0,222,earlier close of a successful trial,2.749
+retest,T04,1,1,544,held cube (last close of a successful trial),5.550
+retest,T05,1,0,232,held cube (last close of a successful trial),5.051
+retest,T06,1,0,251,held cube (last close of a successful trial),5.307
+retest,T07,1,0,279,held cube (last close of a successful trial),5.179
+retest,T08,0,0,206,failure: other closes,2.749
+retest,T08,0,1,550,failure: other closes,2.749
+retest,T08,0,2,884,failure: other closes,
+retest,T09,1,0,231,held cube (last close of a successful trial),5.051
+retest,T10,1,0,214,held cube (last close of a successful trial),4.923
+retest,T11,1,0,215,held cube (last close of a successful trial),4.923
+retest,T12,1,0,229,held cube (last close of a successful trial),6.522
+retest,T13,1,0,220,held cube (last close of a successful trial),4.859
+retest,T14,1,0,241,held cube (last close of a successful trial),5.051
+retest,T15,1,0,218,held cube (last close of a successful trial),5.051
+retest,T16,1,0,230,held cube (last close of a successful trial),4.859
+retest,T17,0,0,259,failure: other closes,2.749
+retest,T17,0,1,577,failure: other closes,2.749
+retest,T18,0,0,304,failure: other closes,2.749
+retest,T18,0,1,703,failure: other closes,2.877
+retest,T19,0,0,293,failure: other closes,2.647
+retest,T19,0,1,700,failure: other closes,2.685
+retest,T20,1,0,238,held cube (last close of a successful trial),4.923
+retest,T21,0,0,318,failure: grasped then dropped,4.476
+retest,T21,0,1,612,failure: other closes,
+retest,T22,1,0,254,held cube (last close of a successful trial),4.923
+retest,T23,1,0,244,held cube (last close of a successful trial),5.051
+retest,T24,0,0,301,failure: grasped then dropped,2.698
+retest,T24,0,1,653,failure: other closes,2.877
+retest,T25,1,0,243,held cube (last close of a successful trial),4.923
+retest,T26,1,0,310,held cube (last close of a successful trial),4.770
+retest,T27,1,0,321,held cube (last close of a successful trial),4.540
+retest,T28,1,0,238,held cube (last close of a successful trial),4.923
+retest,T29,0,0,333,failure: other closes,2.558
+retest,T29,0,1,751,failure: other closes,11.893
+retest,T30,1,0,234,held cube (last close of a successful trial),4.923
+retest,T31,1,0,238,held cube (last close of a successful trial),5.051
+retest,T32,1,0,320,held cube (last close of a successful trial),4.668
+retest,T33,0,0,335,failure: other closes,2.877
+retest,T33,0,1,786,failure: other closes,2.570
+retest,T34,1,0,232,held cube (last close of a successful trial),5.051
+retest,T35,1,0,241,held cube (last close of a successful trial),4.923
+retest,T36,0,0,354,failure: other closes,2.877
+retest,T36,0,1,766,failure: other closes,4.987
+retest,T37,1,0,229,held cube (last close of a successful trial),5.051
+retest,T38,1,0,327,held cube (last close of a successful trial),5.128
+retest,T39,1,0,307,earlier close of a successful trial,2.877
+retest,T39,1,1,717,held cube (last close of a successful trial),5.051
+retest,T40,1,0,226,held cube (last close of a successful trial),5.051
+retest,T41,1,0,220,held cube (last close of a successful trial),5.051
+retest,T42,1,0,319,earlier close of a successful trial,2.877
+retest,T42,1,1,725,held cube (last close of a successful trial),5.051
+retest,T43,1,0,320,earlier close of a successful trial,4.348
+retest,T43,1,1,712,held cube (last close of a successful trial),5.307
+retest,T44,1,0,235,held cube (last close of a successful trial),5.051
+retest,T45,1,0,231,held cube (last close of a successful trial),5.051
+retest,T46,0,0,291,failure: other closes,7.251
+retest,T46,0,1,698,failure: other closes,5.217
+retest,T47,0,0,319,failure: other closes,4.885
+retest,T47,0,1,672,failure: other closes,3.926
+retest,T48,1,0,261,held cube (last close of a successful trial),5.051

@@ -1,0 +1,89 @@
+trials: 72 (43 successful); datasets: {'retest': 48, 'eval_expert_smooth': 24}; failures: {'eval_expert_smooth': 18, 'retest': 11}
+params: tau=0.4486 (sensitivity 0.4036); open threshold 40.0
+
+settled gripper reading 1 s after each (non-home) close:
+                                              count  mean   std   min   25%   50%   75%    max
+group                                                                                         
+earlier close of a successful trial             6.0  4.32  2.94  2.75  2.88  2.88  3.98  10.19
+failure: grasped then dropped                   2.0  3.59  1.26  2.70  3.14  3.59  4.03   4.48
+failure: other closes                          53.0  3.41  1.47  2.56  2.75  2.88  3.57  11.89
+held cube (last close of a successful trial)   43.0  5.13  0.36  4.54  4.92  5.05  5.15   6.52
+empty-grasp threshold theta = 4.2 (lowest held-cube reading = 4.54; empty readings cluster at 2.6-3.7): held flagged empty 0/43 (0.0%); failure closes flagged 45/53 (84.9%), missed 8
+   eval_expert_smooth: held min 5.29 max 6.13 (n=6); failure closes below theta 31/34
+   retest: held min 4.54 max 6.52 (n=37); failure closes below theta 14/21
+failure closes NOT flagged (reading >= theta): [['E00', 4.28], ['E01', 4.21], ['E18', 4.8], ['T29', 11.89], ['T36', 4.99], ['T46', 7.25], ['T46', 5.22], ['T47', 4.88]]
+
+failures by earliest trigger:
+trigger_type        empty_grasp  timeout  All
+dataset                                      
+eval_expert_smooth           18        0   18
+retest                        9        2   11
+All                          27        2   29
+false triggers in successful trials: 4/43 [['retest', 'T03', 'empty_grasp'], ['retest', 'T04', 'empty_grasp'], ['retest', 'T39', 'empty_grasp'], ['retest', 'T42', 'empty_grasp']]
+failures with an empty-grasp event: 27/29; with >=3 closes: 1/29; either: 27/29
+timeout-only failures: [('T21', 2, 'dropped_after_grasp'), ('T46', 2, 'cube_pushed_away')]
+
+SUMMARY (default tau, 15 s cache):
+           dataset        setting  n_failures  selected  selected_rate  rewind_s_median  rewind_s_min  rewind_s_max  nn_dist_median  joint_dist_deg_median
+eval_expert_smooth        shallow          18        18            1.0             1.92          1.53          4.33            0.17                  11.77
+eval_expert_smooth           deep          18        18            1.0             4.80          3.70          5.37            0.20                  64.34
+eval_expert_smooth shallow_lead1s          18        18            1.0             1.75          1.53          3.73            0.17                   9.47
+            retest        shallow          11        11            1.0             2.37          0.77          7.33            0.30                  20.73
+            retest           deep          11        11            1.0             6.00          0.80          7.83            0.19                 104.20
+            retest shallow_lead1s          11        11            1.0             2.37          1.00          7.33            0.28                  20.63
+               all        shallow          29        29            1.0             1.97          0.77          7.33            0.20                  12.21
+               all           deep          29        29            1.0             4.83          0.80          7.83            0.20                  91.34
+               all shallow_lead1s          29        29            1.0             1.87          1.00          7.33            0.20                  10.82
+
+reasons for no target (default settings):
+  shallow: 0 -> {}
+  deep: 0 -> {}
+  shallow_lead1s: 0 -> {}
+
+shallow p=0.9 vs shallow lead>=1.0 s: both selected in 29 trials; frame difference (p-rule minus lead-rule) median 0 (IQR -6..0), same frame in 18; p-rule later than lead-rule in 1, earlier in 10
+
+SENSITIVITY (all 29 failures):
+    tau    buffer        setting  n  found  rewind_s_median  rewind_s_max
+default       15s           deep 29     29             4.83          7.83
+default       15s          p=0.3 29     29             5.27          7.87
+default       15s          p=0.5 29     29             4.30          7.33
+default       15s          p=0.7 29     29             2.77          7.33
+default       15s        shallow 29     29             1.97          7.33
+default       15s shallow_lead1s 29     29             1.87          7.33
+default unlimited           deep 29     29             4.83          7.83
+default unlimited          p=0.3 29     29             5.27          7.87
+default unlimited          p=0.5 29     29             4.30          7.33
+default unlimited          p=0.7 29     29             2.77          7.33
+default unlimited        shallow 29     29             1.97          7.33
+default unlimited shallow_lead1s 29     29             1.87          7.33
+   sens       15s           deep 29     29             4.83          7.83
+   sens       15s          p=0.3 29     29             5.27          7.87
+   sens       15s          p=0.5 29     29             4.30          7.33
+   sens       15s          p=0.7 29     29             2.77          7.33
+   sens       15s        shallow 29     29             2.03          7.33
+   sens       15s shallow_lead1s 29     29             1.90          7.33
+   sens unlimited           deep 29     29             4.83          7.83
+   sens unlimited          p=0.3 29     29             5.27          7.87
+   sens unlimited          p=0.5 29     29             4.30          7.33
+   sens unlimited          p=0.7 29     29             2.77          7.33
+   sens unlimited        shallow 29     29             2.03          7.33
+   sens unlimited shallow_lead1s 29     29             1.90          7.33
+shallow: found with unlimited buffer 29, with 15 s 29; unlimited-buffer targets farther than 15 s: 0; max lead 7.3 s
+deep: found with unlimited buffer 29, with 15 s 29; unlimited-buffer targets farther than 15 s: 0; max lead 7.8 s
+shallow_lead1s: found with unlimited buffer 29, with 15 s 29; unlimited-buffer targets farther than 15 s: 0; max lead 7.3 s
+
+joint contributions: 14 rows, 8 distinct states in 6 trials ({'near_tau': 8}; no 'no_target' case occurred); mean share of squared distance: {'share_pan': 0.18, 'share_lift': 0.1, 'share_elbow': 0.14, 'share_wflex': 0.25, 'share_wroll': 0.32}; dominant joint: {'wroll': 3, 'lift': 2, 'pan': 1, 'wflex': 1, 'elbow': 1}
+   (a uniform split would be 0.20 each; wroll sigma is only 5.6 deg)
+   mean abs deviation per joint in joint units (deg): {'absdiff_pan': 1.6, 'absdiff_lift': 6.7, 'absdiff_elbow': 8.1, 'absdiff_wflex': 3.0, 'absdiff_wroll': 1.2}
+   per state:
+trial setting  nn_dist dominant  share_pan  share_lift  share_elbow  share_wflex  share_wroll
+  E01 shallow     0.44     lift       0.03        0.35         0.01         0.28         0.32
+  E03 shallow     0.37    wroll       0.19        0.00         0.00         0.10         0.70
+  T08 shallow     0.44      pan       0.82        0.01         0.01         0.15         0.01
+  T08    deep     0.41     lift       0.03        0.37         0.31         0.08         0.21
+  T18 shallow     0.40    wflex       0.00        0.01         0.00         0.93         0.06
+  T29 shallow     0.44    elbow       0.05        0.05         0.47         0.36         0.06
+  T47 shallow     0.45    wroll       0.19        0.01         0.03         0.00         0.77
+  T47    deep     0.40    wroll       0.15        0.00         0.29         0.12         0.44
+reference, expert frames above tau in the leave-one-episode-out check (n=338): mean share {'pan': np.float64(0.22), 'lift': np.float64(0.12), 'elbow': np.float64(0.08), 'wflex': np.float64(0.2), 'wroll': np.float64(0.38)}; dominant: {'wroll': 124, 'wflex': 101, 'pan': 63, 'lift': 42, 'elbow': 8}
+figure trials: [['eval_expert_smooth', 'E12', 'empty_grasp', 1.6333333333333333, 4.8], ['retest', 'T19', 'empty_grasp', 2.7666666666666666, 6.0], ['retest', 'T46', 'timeout', 7.333333333333333, 7.833333333333333]]

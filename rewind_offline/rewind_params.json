@@ -1,0 +1,34 @@
+{
+  "tau": 0.4485683957751117,
+  "tau_p90": 0.36802926809252196,
+  "tau_p99": 0.7240518748313564,
+  "tau_sensitivity": 0.4036414158850469,
+  "tau_definition": "95th percentile of leave-one-episode-out nearest-neighbour distance over the MOVING pre-grasp frames (arm motion onset .. first close) of the 50 expert demos, matched against pre-grasp frames of the other 49 demos; 5 arm joints divided by their expert std. tau_sensitivity = same percentile over all pre-grasp frames incl. idle start.",
+  "gripper_open_threshold": 40.0,
+  "gripper_open_threshold_grasp_detection": 30.0,
+  "p_shallow": 0.9,
+  "p_deep": 0.4,
+  "units_note": "not read from the recording configuration; inferred: LeRobot SOFollowerConfig.use_degrees default True (arm joints in degrees, gripper 0-100)",
+  "fps": 30,
+  "arm_joints": [
+    "shoulder_pan.pos",
+    "shoulder_lift.pos",
+    "elbow_flex.pos",
+    "wrist_flex.pos",
+    "wrist_roll.pos"
+  ],
+  "sigma": [
+    10.808447441151557,
+    70.09047207471231,
+    67.39959879863106,
+    16.738165137064755,
+    5.622262633874915
+  ],
+  "onset": {
+    "speed": 15.0,
+    "hold_frames": 10,
+    "back_speed": 3.0
+  },
+  "progress_mae_moving": 0.09071000615591111,
+  "n_expert_frames_indexed": 10797
+}
