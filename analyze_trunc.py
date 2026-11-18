@@ -54,7 +54,7 @@ def trial_metrics(trials, model, px):
     for t in trials.itertuples():
         meta = json.loads((RES / "trunc_raw" / f"{t.trial_id}_a{t.attempt}" / "meta.json").read_text())
         k = f"trunc_{t.trial_id}_a{t.attempt}"
-        A.DATASETS[k] = meta["dataset_repo_id"].split("/", 1)[1]
+        A.DATASETS[k] = "rollout_trunc/" + meta["dataset_repo_id"].split("/", 1)[1]   # datasets live in YKB0123/rollout_trunc/
         g, frames = G.grasp_table(k)
         e = frames.sort_values("frame_index")
         q = e[[f"state:{j}" for j in G.ARM_JOINTS]].to_numpy(float)

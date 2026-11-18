@@ -876,7 +876,7 @@ def load_trial_states(trial_id: str) -> np.ndarray:
         if r.empty:
             raise SystemExit(f"unknown trial {trial_id}")
         meta = json.loads((HERE / f"results/retest_raw/{trial_id}_a{int(r.attempt.iloc[0])}/meta.json").read_text())
-        A.DATASETS["_rt"] = meta["dataset_repo_id"].split("/", 1)[1]
+        A.DATASETS["_rt"] = "rollout_retest/" + meta["dataset_repo_id"].split("/", 1)[1]   # datasets live in YKB0123/rollout_retest/
         e, _ = G.load_frames("_rt")
     e = e.sort_values("frame_index")
     return e[[f"state:{j}" for j in G.ARM_JOINTS] + [f"state:{G.GRIPPER}"]].to_numpy(float)

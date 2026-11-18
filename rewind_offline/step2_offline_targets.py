@@ -43,15 +43,15 @@ def load_trials():
     sc = pd.read_csv(HERE / "success.csv"); sc = sc[sc.dataset == "eval_expert_smooth"].set_index("episode_index")
     for ep, e in f.groupby("episode_index"):
         trials.append(dict(dataset="eval_expert_smooth", trial=f"E{int(ep):02d}", ep=int(ep), success=int(sc.loc[ep, "success"]),
-                           position=sc.loc[ep, "position"], failure_type="", repo="YKB0123/" + A.DATASETS["eval_expert_smooth"],
+                           position=sc.loc[ep, "position"], failure_type="", repo="YKB0123/" + A.DATASETS["eval_expert_smooth"], root=None,
                            e=e.sort_values("frame_index").reset_index(drop=True)))
     rt = pd.read_csv(HERE / "retest_analysis/trial_table.csv")
     for r in rt.itertuples():
         meta = json.loads((HERE / f"results/retest_raw/{r.trial_id}_a{r.attempt}/meta.json").read_text())
-        A.DATASETS["_rt"] = meta["dataset_repo_id"].split("/", 1)[1]
+        A.DATASETS["_rt"] = "rollout_retest/" + meta["dataset_repo_id"].split("/", 1)[1]   # datasets live in YKB0123/rollout_retest/
         ff, _ = G.load_frames("_rt")
         trials.append(dict(dataset="retest", trial=r.trial_id, ep=0, success=int(r.success), position=r.position_id,
-                           failure_type="" if pd.isna(r.failure_type) else r.failure_type, repo=meta["dataset_repo_id"],
+                           failure_type="" if pd.isna(r.failure_type) else r.failure_type, repo=meta["dataset_repo_id"], root=str(A.LEROBOT_ROOT / "rollout_retest" / meta["dataset_repo_id"].split("/", 1)[1]),
                            e=ff.sort_values("frame_index").reset_index(drop=True)))
     for t in trials:
         t["q"] = t["e"][ARMC].to_numpy(float); t["g"] = t["e"][GRIP].to_numpy(float)
@@ -374,7 +374,7 @@ def make_figures(trials, R, C, SW, params, index):
 _DS_CACHE = {}
 def get_frame_ep(t, fr):
     from lerobot.datasets import LeRobotDataset
-    ds = _DS_CACHE.setdefault(t["repo"], LeRobotDataset(t["repo"]))
+    ds = _DS_CACHE.setdefault(t["repo"], LeRobotDataset(t["repo"], root=t["root"]))
     base = int(ds.meta.episodes["dataset_from_index"][t["ep"]])
     return ds, np.asarray(ds[base + fr]["observation.images.front"].permute(1, 2, 0).clip(0, 1) * 255, dtype=np.uint8)
 

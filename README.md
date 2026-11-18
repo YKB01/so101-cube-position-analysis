@@ -133,3 +133,6 @@ and `rewind_offline/rewind_params.json` (rule thresholds). Hardware-free parts a
   (`episodes/ep_NNNN/`), `policy_only_summary.csv` (control rate, slow ticks, inference time, first close time, arm speed) and a speed-curve comparison with the retest model given by `--compare_model`.
   With `--repo_id` the episodes are also recorded as a LeRobot dataset in the same format as the earlier evaluation rollouts.
 - Software tests with simulated hardware: `rewind_offline/test_align_only_fake.py`, `test_policy_only_fake.py`.
+
+Data layout note: the recorded right-side retest and C_trunc-test rollouts live in `~/.cache/huggingface/lerobot/YKB0123/rollout_retest/` and `.../rollout_trunc/`
+(one dataset per trial); the analysis scripts resolve them from there (`meta.json` still holds the original repo id).

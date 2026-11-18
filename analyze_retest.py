@@ -93,7 +93,7 @@ def trial_metrics(trials: pd.DataFrame, model, px_per_unit) -> pd.DataFrame:
         d = RES / "retest_raw" / f"{t.trial_id}_a{t.attempt}"
         meta = json.loads((d / "meta.json").read_text())
         k = f"retest_{t.trial_id}_a{t.attempt}"
-        A.DATASETS[k] = meta["dataset_repo_id"].split("/", 1)[1]
+        A.DATASETS[k] = "rollout_retest/" + meta["dataset_repo_id"].split("/", 1)[1]   # datasets live in YKB0123/rollout_retest/
         g, frames = G.grasp_table(k)
         e = frames.sort_values("frame_index")
         q = e[[f"state:{j}" for j in G.ARM_JOINTS]].to_numpy(float)
