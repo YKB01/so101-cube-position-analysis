@@ -16,7 +16,6 @@
   "temporal_ensemble_coeff": 0.01,
   "rewind_params": "rewind_offline/rewind_params.json",
   "rewind_index": "rewind_offline/rewind_index.npz",
-
   "repo_id": "",
   "repo_id_rewind_seg": "",
   "root": "",
@@ -25,7 +24,6 @@
   "streaming_encoding": true,
   "encoder_threads": 2,
   "out_dir": "",
-
   "max_step_deg": 1.5,
   "gripper_step": 3.0,
   "trigger_wait_s": 0.5,
@@ -34,7 +32,6 @@
   "settle_timeout_s": 3.0,
   "max_rewind_s": 40.0,
   "joint_margin_deg": 5.0,
-
   "align_tol_deg": 2.0,
   "align_max_retries": 3,
   "align_speed_deg_s": 40.0,
@@ -43,9 +40,16 @@
   "reset_slide_step_deg": 2.0,
   "reset_slide_tol_deg": 3.0,
   "exit_return_s": 4.0,
-
   "replay_lag_alpha": 0.3,
   "dry_run_source": "E12",
   "dry_run_play_step_deg": 1.5,
-  "auto_trigger": false
+  "auto_trigger": false,
+  "align_pose": "E12",
+  "align_pose_joints": "",
+  "align_follow_s": 10.0,
+  "align_move_confirm": true,
+  "policy_only_episode_s": 30.0,
+  "compare_model": "",
+  "slow_tick_factor": 1.5,
+  "return_step_deg": 3.0
 }

@@ -122,3 +122,14 @@ and `rewind_offline/rewind_params.json` (rule thresholds). Hardware-free parts a
   then manual trigger / online trigger -> open gripper -> select -> rewind -> settle; writes sent vs measured per waypoint and the final error (per joint, normalised, compared with tau).
 - `--replay`: no hardware; the 29 recorded failed trials drive trigger detection, selection, path planning and the controller (`rewind_offline/replay_*`).
 - Software tests with simulated hardware: `rewind_offline/test_collect_dry_fake.py`, `test_collect_full_fake.py`, `test_dataset_roundtrip.py`.
+
+### Hardware test modes (before the full flow)
+- `python scripts/gripper_reading_check.py [--robot_port ...] [--leader_port ...]`: 10 grasps with the cube and 10 on nothing (teleoperated); reports whether the empty-grasp threshold 4.2 still separates them on today's hardware.
+- `python collect_rewind.py --align_only [--align_pose E12 | --align_pose_joints a,b,c,d,e] [--align_follow_s 10]`: follower + leader only (no policy, no camera): the follower moves to the pose
+  (default: the shallow rewind target of E12; asks for `s` before moving), the leader is aligned (retries, error), waits for `s`, the torque is released and the follower follows the leader for 10 s
+  (not recorded). Writes `align_only_report.json` (align attempts, error per joint, readings before/after release, leader drift, follower tracking error) and `align_only_follow.npz`. E-stop works throughout.
+- `python collect_rewind.py --policy_only --policy_path <ckpt> [--compare_model C|R] [--repo_id ...]`: policy + camera + follower, no leader, no rewind; prints the effective policy config
+  (n_action_steps, temporal_ensemble_coeff, chunk_size, ... and whether it matches the evaluation settings), runs 30 s episodes (`e` ends early) and writes per-episode states/actions/video
+  (`episodes/ep_NNNN/`), `policy_only_summary.csv` (control rate, slow ticks, inference time, first close time, arm speed) and a speed-curve comparison with the retest model given by `--compare_model`.
+  With `--repo_id` the episodes are also recorded as a LeRobot dataset in the same format as the earlier evaluation rollouts.
+- Software tests with simulated hardware: `rewind_offline/test_align_only_fake.py`, `test_policy_only_fake.py`.

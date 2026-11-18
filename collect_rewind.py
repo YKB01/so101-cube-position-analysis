@@ -5,6 +5,8 @@ Collect human corrections after an automatic rewind (real robot), with two test 
   python collect_rewind.py --rewind_mode deep --policy_path <checkpoint> --repo_id YKB0123/rewind_deep_20          # full flow
   python collect_rewind.py --dry_run --rewind_mode deep --dry_run_source E12                                       # follower only
   python collect_rewind.py --replay --rewind_mode deep                                                             # no hardware
+  python collect_rewind.py --align_only                                                                            # follower + leader, no policy
+  python collect_rewind.py --policy_only --policy_path <checkpoint> [--compare_model C] [--repo_id YKB0123/rollout_x]  # policy + camera + follower
 
 Per episode: RESET (teleop, not recorded) -> AUTONOMOUS (policy, 15 s state cache) -> TRIGGERED (hold, open gripper, wait)
 -> select target -> REWIND (measured trajectory replayed backwards, per-joint step limit) -> ALIGN (leader driven to the follower)
@@ -62,7 +64,9 @@ def load_config(argv=None):
     ap.add_argument("--config", default=None, help="JSON file overriding collect_rewind_config.json")
     ap.add_argument("--replay", action="store_true", help="no robot: drive the state machine with recorded failed trials")
     ap.add_argument("--dry_run", action="store_true", help="follower only: manual trigger -> open gripper -> select -> rewind -> settle")
-    ap.add_argument("--rewind_mode", choices=["shallow", "deep"], required=True)
+    ap.add_argument("--align_only", action="store_true", help="follower + leader, no policy: move to a pose, align the leader, release, follow 10 s")
+    ap.add_argument("--policy_only", action="store_true", help="policy + camera + follower, no leader, no rewind: full 30 s episodes at evaluation settings")
+    ap.add_argument("--rewind_mode", choices=["shallow", "deep"], default="deep")
     ap.add_argument("--policy_path", default=None, help="ACT checkpoint (pretrained_model directory); needed for the full flow")
     for k, v in cfg.items():
         if isinstance(v, bool):
@@ -75,12 +79,17 @@ def load_config(argv=None):
     for k in cfg:
         if getattr(a, k) is not None:
             cfg[k] = getattr(a, k)
-    cfg.update(replay=a.replay, dry_run=a.dry_run, rewind_mode=a.rewind_mode, policy_path=a.policy_path)
+    cfg.update(replay=a.replay, dry_run=a.dry_run, align_only=a.align_only, policy_only=a.policy_only, rewind_mode=a.rewind_mode, policy_path=a.policy_path)
+    if sum([a.replay, a.dry_run, a.align_only, a.policy_only]) > 1:
+        ap.error("choose at most one of --replay --dry_run --align_only --policy_only")
     for k in ("rewind_params", "rewind_index"):
         cfg[k] = str((HERE / cfg[k]) if not os.path.isabs(cfg[k]) else cfg[k])
     if not cfg["out_dir"]:
-        cfg["out_dir"] = str(HERE / "results" / "rewind_collect" / f"{'replay' if a.replay else 'dry_run' if a.dry_run else 'run'}_{datetime.now():%Y%m%d_%H%M%S}")
-    if not (a.replay or a.dry_run):
+        cfg["out_dir"] = str(HERE / "results" / "rewind_collect" / f"{'replay' if a.replay else 'dry_run' if a.dry_run else 'align_only' if a.align_only else 'policy_only' if a.policy_only else 'run'}_{datetime.now():%Y%m%d_%H%M%S}")
+    if a.policy_only:
+        if not cfg["policy_path"]:
+            ap.error("--policy_only needs --policy_path")
+    elif not (a.replay or a.dry_run or a.align_only):
         if not cfg["repo_id"] or not cfg["policy_path"]:
             ap.error("the full flow needs --repo_id and --policy_path")
         if not cfg["repo_id_rewind_seg"]:
@@ -200,6 +209,7 @@ class Collector:
         (self.out / "config_used.json").write_text(json.dumps(cfg, indent=2, default=str))
         self.meta_path = self.out / "rewind_meta.csv"
         self.dry = cfg["dry_run"]
+        self.align_only, self.policy_only = cfg["align_only"], cfg["policy_only"]
         self.ctx = self.robot = self.teleop = self.processors = None
         self.ds = self.seg_ds = None
         self.last_cmd6 = None
@@ -213,12 +223,17 @@ class Collector:
     # ------------------------------------------------------------------------------------------- hardware
     def connect(self):
         cfg = self.cfg
-        if self.dry:
+        if self.dry or self.align_only:
             from lerobot.robots import make_robot_from_config
             from lerobot.robots.so_follower.config_so_follower import SO101FollowerConfig
             self.robot = make_robot_from_config(SO101FollowerConfig(port=cfg["robot_port"], id=cfg["robot_id"], cameras={}))
             self.robot.connect()
             self.processors = None
+            if self.align_only:
+                from lerobot.teleoperators import make_teleoperator_from_config
+                from lerobot.teleoperators.so_leader.config_so_leader import SO101LeaderConfig
+                self.teleop = make_teleoperator_from_config(SO101LeaderConfig(port=cfg["leader_port"], id=cfg["leader_id"]))
+                self.teleop.connect()
         else:
             from lerobot.configs import parser
             from lerobot.rollout import RolloutConfig, build_rollout_context
@@ -226,7 +241,7 @@ class Collector:
             cams = (f"{{front: {{type: opencv, index_or_path: {cfg['camera_index']}, width: {cfg['camera_width']}, height: {cfg['camera_height']}, "
                     f"fps: {int(self.fps)}, warmup_s: {cfg['camera_warmup_s']}, fourcc: '{cfg['camera_fourcc']}'}}}}")
             argv = ["--robot.type=so101_follower", f"--robot.port={cfg['robot_port']}", f"--robot.id={cfg['robot_id']}", f"--robot.cameras={cams}",
-                    "--teleop.type=so101_leader", f"--teleop.port={cfg['leader_port']}", f"--teleop.id={cfg['leader_id']}",
+                    *([] if self.policy_only else ["--teleop.type=so101_leader", f"--teleop.port={cfg['leader_port']}", f"--teleop.id={cfg['leader_id']}"]),
                     f"--policy.path={cfg['policy_path']}", f"--policy.n_action_steps={cfg['n_action_steps']}",
                     f"--policy.temporal_ensemble_coeff={cfg['temporal_ensemble_coeff']}", f"--device={cfg['device']}",
                     "--inference.type=sync", "--strategy.type=base", f"--task={cfg['task']}", f"--fps={int(self.fps)}", "--play_sounds=false"]
@@ -247,36 +262,49 @@ class Collector:
             self.engine = self.ctx.policy.inference
             self.interp = ActionInterpolator(multiplier=rcfg.interpolation_multiplier)
             self.engine.reset(); self.engine.start()
-            self._make_datasets()
+            self.rcfg = rcfg
+            if self.policy_only:
+                if cfg["repo_id"]:
+                    self._make_eval_dataset()
+            else:
+                self._make_datasets()
         obs = self.robot.get_observation()
         self.start_pose6 = vec6(obs)                 # slow return target at exit
         self.last_cmd6 = self.start_pose6.copy()
         self.keys.start()
 
-    def _make_datasets(self):
+    def _open_dataset(self, repo_id, root, feats):
         from lerobot.configs.dataset import DatasetRecordConfig
         from lerobot.datasets import LeRobotDataset, VideoEncodingManager
+        cfg = self.cfg
+        dc = DatasetRecordConfig(repo_id=repo_id, single_task=cfg["task"], root=root or None, fps=int(self.fps),
+                                 streaming_encoding=cfg["streaming_encoding"], encoder_threads=cfg["encoder_threads"])
+        nimg = 4 * len(self.robot.cameras)
+        if cfg["resume"]:
+            ds = LeRobotDataset.resume(repo_id, root=dc.root, batch_encoding_size=1, camera_encoder=dc.camera_encoder,
+                                       streaming_encoding=dc.streaming_encoding, encoder_queue_maxsize=dc.encoder_queue_maxsize,
+                                       encoder_threads=dc.encoder_threads, image_writer_processes=0, image_writer_threads=nimg)
+        else:
+            ds = LeRobotDataset.create(repo_id, int(self.fps), root=dc.root, robot_type=self.robot.name, features=feats, use_videos=True,
+                                       image_writer_processes=0, image_writer_threads=nimg, batch_encoding_size=1,
+                                       camera_encoder=dc.camera_encoder, streaming_encoding=dc.streaming_encoding,
+                                       encoder_queue_maxsize=dc.encoder_queue_maxsize, encoder_threads=dc.encoder_threads)
+        self.stack.enter_context(VideoEncodingManager(ds))
+        return ds
+
+    def _make_eval_dataset(self):
+        """policy_only: same feature set as lerobot-rollout's episodic evaluation datasets (no intervention column)."""
+        self.features = dict(self.ctx.data.dataset_features)
+        self.ds = self._open_dataset(self.cfg["repo_id"], self.cfg["root"], self.features)
+        print(f"evaluation dataset: {self.ds.repo_id} ({self.ds.num_episodes} episodes)", flush=True)
+
+    def _make_datasets(self):
         cfg = self.cfg
         feats = dict(self.ctx.data.dataset_features)
         feats["intervention"] = {"dtype": "bool", "shape": (1,), "names": None}
         self.features = feats
 
-        def make(repo_id, root):
-            dc = DatasetRecordConfig(repo_id=repo_id, single_task=cfg["task"], root=root or None, fps=int(self.fps),
-                                     streaming_encoding=cfg["streaming_encoding"], encoder_threads=cfg["encoder_threads"])
-            nimg = 4 * len(self.robot.cameras)
-            if cfg["resume"]:
-                ds = LeRobotDataset.resume(repo_id, root=dc.root, batch_encoding_size=1, camera_encoder=dc.camera_encoder,
-                                           streaming_encoding=dc.streaming_encoding, encoder_queue_maxsize=dc.encoder_queue_maxsize,
-                                           encoder_threads=dc.encoder_threads, image_writer_processes=0, image_writer_threads=nimg)
-            else:
-                ds = LeRobotDataset.create(repo_id, int(self.fps), root=dc.root, robot_type=self.robot.name, features=feats, use_videos=True,
-                                           image_writer_processes=0, image_writer_threads=nimg, batch_encoding_size=1,
-                                           camera_encoder=dc.camera_encoder, streaming_encoding=dc.streaming_encoding,
-                                           encoder_queue_maxsize=dc.encoder_queue_maxsize, encoder_threads=dc.encoder_threads)
-            self.stack.enter_context(VideoEncodingManager(ds))
-            return ds
-
+        make = lambda repo_id, root: self._open_dataset(repo_id, root, feats)
         self.ds = make(cfg["repo_id"], cfg["root"])
         self.seg_ds = make(cfg["repo_id_rewind_seg"], cfg["root_rewind_seg"])
         self.episode_counter = self.ds.num_episodes
@@ -376,6 +404,11 @@ class Collector:
             self.sleep_to(t0)
 
     def teleop_tick(self, obs, record=False):
+        if self.processors is None:                         # align_only: no processors, same key space
+            ta = self.teleop.get_action()
+            self.robot.send_action(ta)
+            self.last_cmd6 = np.array([ta[k] for k in KEYS6], float)
+            return ta
         ta = self.teleop.get_action()
         pt = self.processors.teleop_action_processor((ta, obs))
         ra = self.processors.robot_action_processor((pt, obs))
@@ -488,12 +521,8 @@ class Collector:
 
     def autonomous_dry(self, meta):
         """Dry run: the follower replays a recorded failed trial (step-limited) so that a realistic state cache exists."""
-        import rewind_offline.step2_offline_targets as S2
         c = self.cfg
-        tr = [t for t in S2.load_trials() if t["trial"] == c["dry_run_source"]]
-        if not tr:
-            raise SystemExit(f"unknown --dry_run_source {c['dry_run_source']}")
-        Q = tr[0]["states"]
+        Q = load_trial_states(c["dry_run_source"])
         print(f"\n=== DRY RUN episode {meta['episode_id']}: first moving to the start of {c['dry_run_source']} then replaying it (step limit "
               f"{c['dry_run_play_step_deg']} deg/tick). [t] trigger now  [SPACE] e-stop ===", flush=True)
         step = c["dry_run_play_step_deg"]
@@ -658,24 +687,25 @@ class Collector:
         print(f"   tracking lag at waypoint arrival (|measured - sent|, deg): median {np.median(lag.max(1)):.2f}, max {lag.max():.2f}  (file dry_run_{eid:02d}_waypoints.csv)", flush=True)
 
     # --- ALIGN
-    def align(self, meta, ed):
+    def align_leader(self, tgt6, log=None):
+        """Drive the leader (torque on) to tgt6 in an interruptible loop (same primitives as lerobot's teleop_smooth_move_to: enable_torque,
+        linear interpolation, send_feedback) and verify the error. Returns (err_vector, retries). Raises EStop / Discard."""
         c = self.cfg
         self.phase = "align"
-        obs = self.get_obs(); tgt = vec6(obs)
-        rgb = obs.get("front")
+        tgt6 = np.asarray(tgt6, float)
         self.teleop.enable_torque(); self.leader_torque_on = True
-        retries, ok, err = 0, False, np.inf
+        retries = 0
         while True:
             cur = np.array([self.teleop.get_action()[k] for k in KEYS6], float)
-            dur = max(c["align_min_s"], np.abs(tgt - cur).max() / c["align_speed_deg_s"])
+            dur = max(c["align_min_s"], np.abs(tgt6 - cur).max() / c["align_speed_deg_s"])
             steps = max(int(dur * self.fps), 1)
             print(f"ALIGN: driving the leader to the follower ({dur:.1f} s, attempt {retries + 1}); keep your hands off the leader", flush=True)
             try:
-                for s in range(1, steps + 1):
+                for s_ in range(1, steps + 1):
                     t0 = time.perf_counter()
                     self.poll_keys()
-                    a = s / steps
-                    self.teleop.send_feedback({k: float(cur[i] * (1 - a) + tgt[i] * a) for i, k in enumerate(KEYS6)})
+                    a = s_ / steps
+                    self.teleop.send_feedback({k: float(cur[i] * (1 - a) + tgt6[i] * a) for i, k in enumerate(KEYS6)})
                     self.send6(self.last_cmd6)
                     self.sleep_to(t0)
                 for _ in range(max(int(c["align_hold_s"] * self.fps), 1)):
@@ -685,15 +715,20 @@ class Collector:
                     self.teleop.send_feedback({k: float(v) for k, v in self.teleop.get_action().items()})
                 raise
             lp = np.array([self.teleop.get_action()[k] for k in KEYS6], float)
-            err = np.abs(lp - tgt)
-            ok = bool(err.max() <= c["align_tol_deg"])
-            if ok:
-                break
+            err = lp - tgt6
+            if log is not None:
+                log.append(dict(attempt=retries + 1, duration_s=dur, **{f"err_{k}": float(err[i]) for i, k in enumerate(KEYS6)}, err_max=float(np.abs(err).max())))
+            if np.abs(err).max() <= c["align_tol_deg"]:
+                return err, retries
             retries += 1
             if retries > c["align_max_retries"]:
-                self.wait_key(f"Leader did not reach the follower (max error {err.max():.1f} deg > {c['align_tol_deg']}). [c] try again   [x] discard", ("c",), hold=True)
+                self.wait_key(f"Leader did not reach the follower (max error {np.abs(err).max():.1f} deg > {c['align_tol_deg']}). [c] try again   [x] discard", ("c",), hold=True)
                 retries = 0
-        meta.update(align_err_max_deg=float(err.max()), align_retries=retries)
+
+    def align(self, meta, ed):
+        obs = self.get_obs(); tgt = vec6(obs)
+        err, retries = self.align_leader(tgt)
+        meta.update(align_err_max_deg=float(np.abs(err).max()), align_retries=retries)
         obs = self.get_obs(); rgb = obs.get("front")
         if rgb is not None:
             save_png(ed / "after_align.png", rgb)
@@ -702,9 +737,9 @@ class Collector:
             bx, by = meta.get("cube_before_x", np.nan), meta.get("cube_before_y", np.nan)
             meta["cube_shift_px"] = float(np.hypot(ax - bx, ay - by)) if not np.isnan(ax) and not np.isnan(bx) else ""
             if np.isnan(ax):
-                k = self.wait_key("Cube not detected after the rewind (pushed out of the workspace, or hidden by the arm?). "
-                                  "[c] keep the episode   [x] discard (cube out of workspace)", ("c",))
-        print(f"ALIGN DONE: max leader-follower error {err.max():.2f} deg", flush=True)
+                self.wait_key("Cube not detected after the rewind (pushed out of the workspace, or hidden by the arm?). "
+                              "[c] keep the episode   [x] discard (cube out of workspace)", ("c",))
+        print(f"ALIGN DONE: max leader-follower error {np.abs(err).max():.2f} deg", flush=True)
 
     # --- WAIT_START
     def wait_start(self, meta):
@@ -747,6 +782,10 @@ class Collector:
             try:
                 if self.dry:
                     self.run_dry()
+                elif self.align_only:
+                    self.run_align_only()
+                elif self.policy_only:
+                    self.run_policy_only()
                 else:
                     self.run_full()
             except EStop:
@@ -810,12 +849,332 @@ class Collector:
                     self.robot.send_action({k: float(cur[i] * (1 - a) + self.start_pose6[i] * a) for i, k in enumerate(KEYS6)})
                     self.sleep_to(t0)
         self.keys.stop()
+        if self.teleop is not None and self.leader_torque_on:
+            with contextlib.suppress(Exception):
+                self.teleop.disable_torque()
         with contextlib.suppress(Exception):
             self.stack.close()                    # finalises both datasets
         for dev in (getattr(self, "robot", None), getattr(self, "teleop", None)):
             with contextlib.suppress(Exception):
                 if dev is not None:
                     (dev.inner if hasattr(dev, "inner") else dev).disconnect()
+
+
+def load_trial_states(trial_id: str) -> np.ndarray:
+    """Measured joint states (N, 6) of a recorded failed trial: E## = eval_expert_smooth episode, T## = right-side retest trial (final attempt)."""
+    import pandas as pd
+    import analyze_cube_positions as A
+    import analyze_grasp_points as G
+    if trial_id.startswith("E"):
+        f, _ = G.load_frames("eval_expert_smooth")
+        e = f[f.episode_index == int(trial_id[1:])]
+        if e.empty:
+            raise SystemExit(f"unknown trial {trial_id}")
+    else:
+        rt = pd.read_csv(HERE / "retest_analysis/trial_table.csv")
+        r = rt[rt.trial_id == trial_id]
+        if r.empty:
+            raise SystemExit(f"unknown trial {trial_id}")
+        meta = json.loads((HERE / f"results/retest_raw/{trial_id}_a{int(r.attempt.iloc[0])}/meta.json").read_text())
+        A.DATASETS["_rt"] = meta["dataset_repo_id"].split("/", 1)[1]
+        e, _ = G.load_frames("_rt")
+    e = e.sort_values("frame_index")
+    return e[[f"state:{j}" for j in G.ARM_JOINTS] + [f"state:{G.GRIPPER}"]].to_numpy(float)
+
+
+def reference_curves(model: str):
+    """Pre-grasp arm-speed curves (aligned to the first grasp, -4 s .. +0.5 s) and first-grasp times of the retest trials of `model` (R or C)."""
+    import pandas as pd
+    import analyze_grasp_points as G
+    import analyze_correction as C
+    cache = HERE / f"retest_analysis/reference_curves_{model}.npz"
+    if cache.exists():
+        z = np.load(cache)
+        return z["curves"], z["grasp_t"]
+    rt = pd.read_csv(HERE / "retest_analysis/trial_table.csv")
+    curves, gts = [], []
+    for tid in rt[rt.model == model].trial_id:
+        S = load_trial_states(tid)
+        gf = G.detect_first_grasp(S[:, 5])["grasp_frame"]
+        if np.isnan(gf):
+            continue
+        gf = int(gf)
+        curves.append(speed_curve(S[:, :5], gf)); gts.append(gf / 30)
+    curves, gts = np.array(curves), np.array(gts)
+    np.savez(cache, curves=curves, grasp_t=gts)
+    return curves, gts
+
+
+def speed_curve(q5, gf, window_s=4.0, after_s=0.5):
+    import analyze_correction as C
+    sp = np.r_[0.0, np.linalg.norm(np.diff(q5, axis=0), axis=1) * 30.0]
+    sm = C.moving_average(sp, C.SMOOTH_FRAMES)
+    idx = np.arange(gf - int(window_s * 30), gf + int(after_s * 30) + 1)
+    return np.where((idx >= 0) & (idx < len(sm)), sm[np.clip(idx, 0, len(sm) - 1)], np.nan)
+
+
+def _collector_methods():
+    """Extra Collector methods for --align_only and --policy_only (attached below)."""
+
+    def align_pose6(self):
+        c, p = self.cfg, self.params
+        if c["align_pose_joints"]:
+            arm = np.array([float(x) for x in c["align_pose_joints"].split(",")])
+            assert len(arm) == 5, "--align_pose_joints needs 5 comma-separated values"
+            src = "given joints"
+        else:
+            import pandas as pd
+            Q = load_trial_states(c["align_pose"])
+            off = pd.read_csv(HERE / "rewind_offline/rewind_targets.csv").set_index("trial")
+            f = int(off.loc[c["align_pose"], "shallow_frame"])
+            arm = Q[f, :5]
+            src = f"shallow rewind target of {c['align_pose']} (frame {f})"
+        arm = RC.clamp_arm(arm, p, c["joint_margin_deg"])
+        return np.r_[arm, p["gripper_open_value"]], src
+
+    def run_align_only(self):
+        c, p = self.cfg, self.params
+        tgt6, src = self.align_pose6()
+        obs = self.get_obs(); cur = vec6(obs)
+        print(f"\nALIGN-ONLY test. Follower pose to hold: {np.round(tgt6, 1).tolist()} ({src}); "
+              f"{np.abs(tgt6 - cur).max():.0f} deg away from the current pose (max over joints).", flush=True)
+        report = dict(target_pose=tgt6.tolist(), source=src, start_pose=cur.tolist(), align_attempts=[])
+        if c["align_move_confirm"]:
+            print("Check that the path is clear. [s] move the follower there   [q] quit", flush=True)
+            while True:
+                t0 = time.perf_counter(); ks = self.poll_keys(allow_discard=False, extra=("s", "q"))
+                if "q" in ks:
+                    return
+                if "s" in ks:
+                    break
+                self.sleep_to(t0)
+        # 1) move the follower (step limited) and let it settle
+        self.phase = "move"
+        ctrl = RC.RewindController([tgt6[:5]], cur[:5], c["max_step_deg"]); gr = RC.GripperRamp(cur[5], tgt6[5], c["gripper_step"])
+        det = RC.SettleDetector(c["settle_tol_deg"], c["settle_consec"], int(c["settle_timeout_s"] * self.fps))
+        res = None
+        while res is None:
+            t0 = time.perf_counter(); self.poll_keys(allow_discard=False)
+            obs = self.get_obs(); meas = vec6(obs)
+            cmd5, _ = ctrl.step(); self.send6(np.r_[cmd5, gr.next()], obs)
+            if ctrl.done and gr.done:
+                res = det.update(meas[:5], tgt6[:5])
+            self.sleep_to(t0)
+        obs = self.get_obs(); fol = vec6(obs)
+        report["follower_reached"] = dict(result=res, err_per_joint=(fol - tgt6).tolist())
+        print(f"follower at the pose ({res}); error per joint {np.round(fol - tgt6, 2).tolist()} deg", flush=True)
+        # 2) align the leader to the follower's measured pose
+        log = []
+        try:
+            err, retries = self.align_leader(fol, log)
+        except Discard:
+            print("aborted", flush=True)
+            return
+        report.update(align_attempts=log, align_retries=retries, align_err_per_joint=err.tolist(), align_err_max=float(np.abs(err).max()))
+        print(f"ALIGN DONE: retries {retries}, error per joint {np.round(err, 2).tolist()} deg (max {np.abs(err).max():.2f}, tolerance {c['align_tol_deg']})", flush=True)
+        # 3) wait for the start key, then release the torque and let the follower follow for align_follow_s
+        try:
+            self.wait_key(f"Aligned. Hands on the leader, then press [s] to release it; the follower then follows the leader for {c['align_follow_s']:.0f} s (not recorded). [SPACE] e-stop", ("s",))
+        except Discard:
+            print("aborted", flush=True)
+            return
+        obs = self.get_obs(); lead_before = np.array([self.teleop.get_action()[k] for k in KEYS6], float); fol_before = vec6(obs)
+        self.teleop.disable_torque(); self.leader_torque_on = False
+        self.phase = "follow"
+        rows, t_begin = [], time.perf_counter()
+        print("released: following...", flush=True)
+        while time.perf_counter() - t_begin < c["align_follow_s"]:
+            t0 = time.perf_counter(); self.poll_keys(allow_discard=False)
+            obs = self.get_obs(); fol = vec6(obs)
+            ta = self.teleop.get_action(); lead = np.array([ta[k] for k in KEYS6], float)
+            self.robot.send_action(ta); self.last_cmd6 = lead
+            rows.append(np.r_[time.perf_counter() - t_begin, lead, fol])
+            self.sleep_to(t0)
+        R = np.array(rows)
+        np.savez(self.out / "align_only_follow.npz", t=R[:, 0], leader=R[:, 1:7], follower=R[:, 7:13], leader_before=lead_before, follower_before=fol_before)
+        lead_t, fol_t = R[:, 1:7], R[:, 7:13]
+        def at(sec):
+            i = int(np.argmin(np.abs(R[:, 0] - sec)))
+            return dict(t=float(R[i, 0]), leader=lead_t[i].tolist(), follower=fol_t[i].tolist())
+        drift = np.abs(lead_t - lead_before).max(axis=1)
+        report.update(before_release=dict(leader=lead_before.tolist(), follower=fol_before.tolist(), leader_minus_follower=(lead_before - fol_before).tolist()),
+                      after_release={f"{s}s": at(s) for s in (0.5, 1.0, 2.0)} | {"end": at(R[-1, 0])},
+                      leader_drift_max_first_2s_deg=float(drift[R[:, 0] <= 2.0].max()) if (R[:, 0] <= 2.0).any() else None,
+                      leader_drift_max_deg=float(drift.max()),
+                      follower_tracking_error_deg=dict(median=float(np.median(np.abs(lead_t - fol_t).max(axis=1))), max=float(np.abs(lead_t - fol_t).max())))
+        (self.out / "align_only_report.json").write_text(json.dumps(report, indent=2))
+        print(f"\nBEFORE release: leader - follower per joint {np.round(lead_before - fol_before, 2).tolist()} deg")
+        print(f"AFTER release: max leader drift from the aligned pose in the first 2 s: {report['leader_drift_max_first_2s_deg']:.2f} deg; over {c['align_follow_s']:.0f} s: {report['leader_drift_max_deg']:.1f} deg")
+        print(f"follower tracking error (|leader - follower|, max over joints): median {report['follower_tracking_error_deg']['median']:.2f}, max {report['follower_tracking_error_deg']['max']:.2f} deg")
+        print(f"report: {self.out / 'align_only_report.json'}", flush=True)
+
+    def print_policy_config(self):
+        pol = self.ctx.policy.policy; pc = pol.config
+        eff = dict(policy_type=getattr(pc, "type", type(pol).__name__), n_action_steps=pc.n_action_steps, temporal_ensemble_coeff=pc.temporal_ensemble_coeff,
+                   chunk_size=pc.chunk_size, n_obs_steps=getattr(pc, "n_obs_steps", None), device=self.rcfg.device, use_amp=getattr(pc, "use_amp", None),
+                   inference=getattr(self.rcfg.inference, "type", "sync"), interpolation_multiplier=self.rcfg.interpolation_multiplier, fps=self.rcfg.fps,
+                   has_temporal_ensembler=hasattr(pol, "temporal_ensembler"), checkpoint=self.cfg["policy_path"])
+        want = dict(n_action_steps=1, temporal_ensemble_coeff=0.01, inference="sync", interpolation_multiplier=1, fps=30.0)
+        print("\nEFFECTIVE POLICY CONFIG:", flush=True)
+        bad = []
+        for k, v in eff.items():
+            flag = ""
+            if k in want and (v != want[k]):
+                flag = f"   <-- DIFFERS from the evaluation setting ({want[k]})"; bad.append(k)
+            print(f"   {k:26s} {v}{flag}", flush=True)
+        if not eff["has_temporal_ensembler"]:
+            bad.append("temporal_ensembler"); print("   <-- no temporal ensembler is active", flush=True)
+        print("   => " + ("MATCHES the evaluation settings (n_action_steps=1, temporal_ensemble_coeff=0.01, sync, 30 fps)" if not bad else f"MISMATCH: {bad}"), flush=True)
+        (self.out / "policy_config.json").write_text(json.dumps(eff | dict(mismatch=bad), indent=2, default=str))
+        return bad
+
+    def run_policy_only(self):
+        import pandas as pd
+        c = self.cfg
+        bad = self.print_policy_config()
+        if bad:
+            print("Press [c] to continue anyway or [q] to quit.", flush=True)
+            while True:
+                ks = self.poll_keys(allow_discard=False, extra=("c", "q"))
+                if "q" in ks:
+                    return
+                if "c" in ks:
+                    break
+                time.sleep(0.05)
+        print("\nPOLICY-ONLY: full episodes at evaluation settings, no leader, no rewind. [s] start   [e] end the episode early   [x] discard   [q] quit   [SPACE] e-stop", flush=True)
+        self.summary_rows, self.curves = [], []
+        eid = 0
+        while True:
+            self.phase = "wait"
+            print("\nPlace the cube, then [s] to start (or [q] to quit).", flush=True)
+            while True:
+                t0 = time.perf_counter(); ks = self.poll_keys(allow_discard=False, extra=("s", "q"))
+                if ks:
+                    break
+                self.send6(self.last_cmd6); self.sleep_to(t0)
+            if ks[0] == "q":
+                break
+            eid += 1
+            try:
+                self.policy_episode(eid)
+            except Discard as d:
+                print(f"*** episode {eid} discarded ({d.reason})", flush=True)
+                if self.ds is not None and self.ds.has_pending_frames():
+                    self.ds.clear_episode_buffer()
+            self.return_to_start()
+        self.policy_only_report()
+
+    def return_to_start(self):
+        self.phase = "return"
+        print("returning to the start pose...", flush=True)
+        while True:
+            t0 = time.perf_counter(); self.poll_keys(allow_discard=False)
+            obs = self.get_obs(); cur = vec6(obs)
+            step = np.clip(self.start_pose6 - self.last_cmd6, -self.cfg["return_step_deg"], self.cfg["return_step_deg"])
+            self.send6(self.last_cmd6 + step, obs)
+            if np.abs(self.start_pose6 - cur).max() < 2.0 and np.abs(step).max() < 0.5:
+                return
+            self.sleep_to(t0)
+
+    def policy_episode(self, eid):
+        import pandas as pd
+        import analyze_grasp_points as G
+        from lerobot.rollout.strategies.core import send_next_action
+        from lerobot.utils.constants import ACTION, OBS_STR
+        from lerobot.utils.feature_utils import build_dataset_frame
+        c = self.cfg
+        ed = self.out / "episodes" / f"ep_{eid:04d}"
+        obs = self.get_obs(); rgb = obs.get("front")
+        cx, cy = cube_position(rgb) if rgb is not None else (float("nan"),) * 2
+        if rgb is not None:
+            save_png(ed / "cube_start.png", rgb)
+        self.autolog = AutoLog(ed, self.fps, (rgb.shape[1], rgb.shape[0]) if rgb is not None else None)
+        self.engine.reset(); self.interp.reset()
+        T, dts, t_obs, t_inf, states, actions = [], [], [], [], [], []
+        last_action, early = None, False
+        print(f"=== episode {eid} (cube at {cx:.0f},{cy:.0f}) running {c['policy_only_episode_s']:.0f} s ===", flush=True)
+        t_start = time.perf_counter(); t_prev = None
+        try:
+            while time.perf_counter() - t_start < c["policy_only_episode_s"]:
+                t0 = time.perf_counter()
+                if "e" in self.poll_keys(extra=("e",)):
+                    early = True
+                    break
+                to = time.perf_counter(); obs = self.get_obs(); t_obs.append((time.perf_counter() - to) * 1e3)
+                state = vec6(obs)
+                op = self.processors.robot_observation_processor(obs)
+                ti = time.perf_counter(); ad = send_next_action(op, obs, self.ctx, self.interp); t_inf.append((time.perf_counter() - ti) * 1e3)
+                if ad is not None:
+                    last_action = np.array([ad[k] for k in KEYS6], float); self.last_cmd6 = last_action
+                    if self.ds is not None:
+                        self.ds.add_frame({**build_dataset_frame(self.features, op, prefix=OBS_STR), **build_dataset_frame(self.features, ad, prefix=ACTION), "task": c["task"]})
+                T.append(t0 - t_start); dts.append(0.0 if t_prev is None else (t0 - t_prev) * 1e3); t_prev = t0
+                states.append(state); actions.append(last_action if last_action is not None else state)
+                self.autolog.add(T[-1], state, actions[-1], obs.get("front"))
+                self.sleep_to(t0)
+        except (Discard, EStop):
+            self.autolog.close()
+            raise
+        self.autolog.close()
+        if self.ds is not None and self.ds.has_pending_frames():
+            self.ds.save_episode()
+        S = np.array(states); dts = np.array(dts[1:]); t_inf, t_obs = np.array(t_inf), np.array(t_obs)
+        np.savez(ed / "ticks.npz", t=np.array(T), dt_ms=np.array([0.0] + list(dts)), obs_ms=t_obs, infer_ms=t_inf)
+        gd = G.detect_first_grasp(S[:, 5]); gf = gd["grasp_frame"]
+        sp = np.r_[0.0, np.linalg.norm(np.diff(S[:, :5], axis=0), axis=1) * 30.0]
+        row = dict(episode_id=eid, timestamp=datetime.now().isoformat(timespec="seconds"), cube_start_x=cx, cube_start_y=cy, duration_s=T[-1] if T else 0.0,
+                   n_ticks=len(S), early_end=early, hz_mean=1e3 / dts.mean() if len(dts) else np.nan, hz_p5=1e3 / np.percentile(dts, 95) if len(dts) else np.nan,
+                   dt_ms_mean=dts.mean(), dt_ms_p95=np.percentile(dts, 95), dt_ms_max=dts.max(),
+                   slow_ticks_pct=100 * float((dts > c["slow_tick_factor"] * 1e3 / self.fps).mean()),
+                   infer_ms_mean=t_inf.mean(), infer_ms_p50=np.median(t_inf), infer_ms_p95=np.percentile(t_inf, 95), infer_ms_max=t_inf.max(), obs_ms_mean=t_obs.mean(),
+                   first_grasp_frame=gf, first_grasp_time_s=gf / 30 if not np.isnan(gf) else np.nan,
+                   mean_arm_speed_first10s=float(np.mean(sp[:300])), max_arm_speed=float(sp.max()))
+        self.summary_rows.append(row)
+        pd.DataFrame(self.summary_rows).to_csv(self.out / "policy_only_summary.csv", index=False, float_format="%.3f")
+        if not np.isnan(gf):
+            self.curves.append(speed_curve(S[:, :5], int(gf)))
+        print(f"   control {row['hz_mean']:.1f} Hz (p5 {row['hz_p5']:.1f}), slow ticks {row['slow_ticks_pct']:.1f}%, inference {row['infer_ms_mean']:.1f} ms mean / {row['infer_ms_p95']:.1f} p95 / {row['infer_ms_max']:.1f} max, "
+              f"first close at {row['first_grasp_time_s']:.2f} s, mean arm speed first 10 s {row['mean_arm_speed_first10s']:.1f}", flush=True)
+
+    def policy_only_report(self):
+        if not self.summary_rows:
+            return
+        import pandas as pd
+        import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+        df = pd.DataFrame(self.summary_rows)
+        lines = [f"policy-only run: {len(df)} episodes",
+                 f"control rate: mean {df.hz_mean.mean():.1f} Hz (target {self.fps:.0f}); worst episode p5 {df.hz_p5.min():.1f} Hz; slow ticks (> {self.cfg['slow_tick_factor']}x the period): {df.slow_ticks_pct.mean():.1f}%",
+                 f"inference+send per tick: mean {df.infer_ms_mean.mean():.1f} ms, p95 {df.infer_ms_p95.mean():.1f} ms, max {df.infer_ms_max.max():.1f} ms (period {1e3 / self.fps:.1f} ms)",
+                 f"first close time: median {df.first_grasp_time_s.median():.2f} s (range {df.first_grasp_time_s.min():.2f}-{df.first_grasp_time_s.max():.2f})",
+                 f"mean arm speed in the first 10 s: median {df.mean_arm_speed_first10s.median():.1f} units/s"]
+        m = self.cfg["compare_model"]
+        fig, axs = plt.subplots(1, 2, figsize=(11, 3.8))
+        tt = np.arange(-120, 16) / 30
+        if m:
+            rc, rg = reference_curves(m)
+            axs[0].plot(tt, np.nanmedian(rc, 0), color="#6250d6", lw=2, label=f"retest model {m} (median, n={len(rc)})")
+            axs[0].fill_between(tt, np.nanpercentile(rc, 25, 0), np.nanpercentile(rc, 75, 0), color="#6250d6", alpha=0.18, lw=0)
+            lines.append(f"reference (retest model {m}, all positions, n={len(rg)}): first close median {np.median(rg):.2f} s (IQR {np.percentile(rg, 25):.2f}-{np.percentile(rg, 75):.2f}); "
+                         f"new run median {df.first_grasp_time_s.median():.2f} s")
+            axs[1].boxplot([rg], positions=[0], widths=0.5, showfliers=False)
+        for cv in self.curves:
+            axs[0].plot(tt, cv, color="#eb6834", lw=0.9, alpha=0.8)
+        if self.curves:
+            axs[0].plot([], [], color="#eb6834", label="this run (each episode)")
+        axs[0].axvline(0, color="#52514e", lw=1); axs[0].set_xlabel("Time relative to first close (s)"); axs[0].set_ylabel("Arm speed (units/s)")
+        axs[0].legend(frameon=False, fontsize=8); axs[0].set_title("Pre-grasp arm speed")
+        axs[1].scatter(np.full(len(df), 1) + np.random.default_rng(0).uniform(-0.1, 0.1, len(df)), df.first_grasp_time_s, color="#eb6834")
+        axs[1].set_xticks([0, 1] if m else [1]); axs[1].set_xticklabels([f"retest {m}", "this run"] if m else ["this run"]); axs[1].set_ylabel("First close time (s)")
+        fig.savefig(self.out / "policy_only_speed_curves.png", dpi=150, bbox_inches="tight"); plt.close(fig)
+        (self.out / "policy_only_summary.txt").write_text("\n".join(lines) + "\n")
+        print("\n" + "\n".join(lines), flush=True)
+
+    return dict(align_pose6=align_pose6, run_align_only=run_align_only, print_policy_config=print_policy_config, run_policy_only=run_policy_only,
+                return_to_start=return_to_start, policy_episode=policy_episode, policy_only_report=policy_only_report)
+
+
+for _n, _f in _collector_methods().items():
+    setattr(Collector, _n, _f)
 
 
 # ====================================================================================================== replay
