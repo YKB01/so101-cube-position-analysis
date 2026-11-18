@@ -52,7 +52,7 @@ META_COLUMNS = [
     "target_buffer_index", "target_episode_frame", "target_time_s", "target_progress", "target_nn_distance",
     "rewind_planned_s", "rewind_actual_s", "n_waypoints", "joint_distance_deg", "settled",
     "final_err_max_deg", "final_err_norm", "final_err_norm_over_tau", "final_err_shoulder_pan", "final_err_shoulder_lift", "final_err_elbow_flex", "final_err_wrist_flex", "final_err_wrist_roll",
-    "cube_before_x", "cube_before_y", "cube_after_x", "cube_after_y", "cube_shift_px",
+    "cube_before_x", "cube_before_y", "cube_after_x", "cube_after_y", "cube_shift_px", "cube_shift_from_start_px",
     "align_err_max_deg", "align_retries", "human_s", "discarded", "discard_reason", "autonomous_dir"]
 
 
@@ -788,6 +788,8 @@ class Collector:
             meta["cube_after_x"], meta["cube_after_y"] = ax, ay
             bx, by = meta.get("cube_before_x", np.nan), meta.get("cube_before_y", np.nan)
             meta["cube_shift_px"] = float(np.hypot(ax - bx, ay - by)) if not np.isnan(ax) and not np.isnan(bx) else ""
+            sx, sy = meta.get("cube_start_x", np.nan), meta.get("cube_start_y", np.nan)    # at the trigger the gripper usually hides the cube
+            meta["cube_shift_from_start_px"] = float(np.hypot(ax - sx, ay - sy)) if not np.isnan(ax) and not np.isnan(sx) else ""
             if np.isnan(ax):
                 self.wait_key("Cube not detected after the rewind (pushed out of the workspace, or hidden by the arm?). "
                               "[c] keep the episode   [x] discard (cube out of workspace)", ("c",))
