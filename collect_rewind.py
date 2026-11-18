@@ -269,6 +269,7 @@ class Collector:
             self.interp = ActionInterpolator(multiplier=rcfg.interpolation_multiplier)
             self.engine.reset(); self.engine.start()
             self.rcfg = rcfg
+            self.warmup_policy()
             if self.policy_only:
                 if cfg["repo_id"]:
                     self._make_eval_dataset()
@@ -278,6 +279,20 @@ class Collector:
         self.start_pose6 = vec6(obs)                 # slow return target at exit
         self.last_cmd6 = self.start_pose6.copy()
         self.keys.start()
+
+    def warmup_policy(self):
+        """Two throw-away inferences so that the first control tick of an episode does not pay the CUDA warm-up (229 ms in the policy-only test)."""
+        try:
+            from lerobot.utils.constants import OBS_STR
+            from lerobot.utils.feature_utils import build_dataset_frame
+            obs = self.robot.get_observation()
+            frame = build_dataset_frame(self.ctx.data.dataset_features, self.processors.robot_observation_processor(obs), prefix=OBS_STR)
+            for _ in range(2):
+                self.engine.get_action(frame)
+            self.engine.reset()
+            print("policy warmed up", flush=True)
+        except Exception as e:                                           # not essential
+            print(f"policy warm-up skipped: {e}", flush=True)
 
     def _open_dataset(self, repo_id, root, feats):
         from lerobot.configs.dataset import DatasetRecordConfig

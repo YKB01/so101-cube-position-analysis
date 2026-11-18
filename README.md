@@ -136,3 +136,5 @@ and `rewind_offline/rewind_params.json` (rule thresholds). Hardware-free parts a
 
 Data layout note: the recorded right-side retest and C_trunc-test rollouts live in `~/.cache/huggingface/lerobot/YKB0123/rollout_retest/` and `.../rollout_trunc/`
 (one dataset per trial); the analysis scripts resolve them from there (`meta.json` still holds the original repo id).
+- `python scripts/verify_rewind_dataset.py <repo_id> [--segments] [--meta <rewind_meta.csv>]`: checks a dataset written by `collect_rewind.py` against the existing intervention dataset
+  (features, fps, task, intervention column, timestamps, ranges, video decoding, sidecar metadata).
