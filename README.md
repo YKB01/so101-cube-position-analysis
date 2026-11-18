@@ -96,3 +96,8 @@ progress <= p; `select_rewind_target_lead(...)` is the time-based shallow varian
   (29 failures, 43 successes), selects shallow / deep targets, and writes `rewind_targets.csv`, summaries, sensitivity tables and figures A-C.
 - `rewind_offline/report_rewind_offline.md` answers whether tau/progress are reliable, how many failures the triggers cover, whether the two
   depths look different, and whether a 15 s cache is enough. Joint units are inferred (not read from the recording configuration).
+
+### Corrected deep rule (phase 0)
+`select_rewind_target_deep` in `rewind_target.py`: original deep target (progress <= 0.4); if it is less than 2.0 s earlier than the time-rule shallow target,
+the last state with progress <= 0.2 that is at least 2.0 s earlier; otherwise the start pose (median of the idle expert frames before the arm moves). The
+result records which level was used. `python rewind_offline/phase0_deep_fix.py` re-runs the 29 failed trajectories (`phase0_deep_fix.csv`, `phase0_summary.txt`, `phase0_figB_four_trials.png`).

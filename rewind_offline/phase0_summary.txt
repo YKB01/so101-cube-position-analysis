@@ -1,0 +1,22 @@
+params: deep_min_gap_s=2.0, deep_fallback_progress=0.2, start_pose=[-2.4, -103.2, 94.7, 62.7, -6.2]
+29 failures; level used: {'original': 25, 'progress_le_0.2': 2, 'start_pose': 2}
+by dataset:
+level               original  progress_le_0.2  start_pose
+dataset                                                  
+eval_expert_smooth        17                1           0
+retest                     8                1           2
+
+old deep gap to shallow (s): median 3.13, min -0.20; trials with gap < 2.0 s: 4 ['E01', 'T08', 'T21', 'T46']
+
+trials that changed level:
+trial trigger_type           level  shallow_s  old_deep_s  old_gap_s  new_deep_s  new_gap_s  new_deep_progress  deep_joint_deg  start_pose_joint_deg_from_trigger
+  E01  empty_grasp progress_le_0.2       3.73        4.60       0.87        5.77       2.03               0.17          144.81                             199.53
+  T08  empty_grasp progress_le_0.2       1.50        2.70       1.20        4.33       2.83               0.17          150.06                             194.45
+  T21      timeout      start_pose       1.00        0.80      -0.20       15.00        NaN                NaN          100.48                             100.48
+  T46      timeout      start_pose       7.33        7.83       0.50       15.00        NaN                NaN          192.56                             192.56
+
+after the correction: shallow->deep time difference (s), non-start-pose levels: median 3.17, min 2.03, max 5.73 (n=27)
+rewind duration (s) new deep: median 4.83, min 3.70, max 15.00 (start_pose rows = whole cache length)
+joint distance trigger->deep target (deg): median 96.6, min 40.3, max 192.6; shallow: median 10.8
+literal reading of level 2 (without the gap condition) would pick a state for: 2 of the 4 trials that left level 1
+levels where the level-2 candidate also fails the gap: ['T21', 'T46']

@@ -22,6 +22,7 @@ ONSET_SPEED, ONSET_HOLD, ONSET_BACK_SPEED = 15.0, 10, 3.0   # arm-motion onset (
 GRASP_DETECTION_OPEN = 30.0     # = analyze_grasp_points.OPEN_MIN (grasp detection keeps using this)
 GRIPPER_OPEN_THRESHOLD = 40.0   # "gripper is open" for the rewind target (user decision after step 1: stricter, avoids transition frames)
 P_SHALLOW, P_DEEP = 0.9, 0.4
+DEEP_MIN_GAP_S, DEEP_FALLBACK_PROGRESS = 2.0, 0.2   # phase-0 correction of the deep rule (see rewind_target.select_rewind_target_deep)
 
 
 def motion_onset(q: np.ndarray) -> int:
@@ -158,7 +159,10 @@ def main():
                   "(arm motion onset .. first close) of the 50 expert demos, matched against pre-grasp frames of the other 49 demos; "
                   "5 arm joints divided by their expert std. tau_sensitivity = same percentile over all pre-grasp frames incl. idle start.",
                   gripper_open_threshold=GRIPPER_OPEN_THRESHOLD, gripper_open_threshold_grasp_detection=GRASP_DETECTION_OPEN,
-                  p_shallow=P_SHALLOW, p_deep=P_DEEP,
+                  p_shallow=P_SHALLOW, p_deep=P_DEEP, shallow_lead_s=1.0,
+                  deep_min_gap_s=DEEP_MIN_GAP_S, deep_fallback_progress=DEEP_FALLBACK_PROGRESS,
+                  start_pose=[float(x) for x in np.median(M[M.phase == "pre_motion"][[f"q{i}" for i in range(5)]].to_numpy(float), axis=0)],
+                  start_pose_definition="per-joint median of the 5 arm joints over the idle frames before the arm-motion onset, all 50 expert demos",
                   units_note="not read from the recording configuration; inferred: LeRobot SOFollowerConfig.use_degrees default True "
                              "(arm joints in degrees, gripper 0-100)",
                   fps=30, arm_joints=G.ARM_JOINTS, sigma=sigma.tolist(),

@@ -139,3 +139,60 @@ def joint_contributions(arm_states, index: RewindIndex):
     diff = z - index.states_norm[i]
     sq = diff ** 2
     return d, sq / np.maximum(sq.sum(1, keepdims=True), 1e-12), np.abs(diff)
+
+
+# ------------------------------------------------------------------------------------------------ corrected deep rule
+@dataclass
+class DeepResult:
+    """Result of the corrected deep rule. level: "original" | "progress_le_0.2" | "start_pose" | None (invalid call)."""
+    level: str | None
+    idx: int | None                 # index into buffer_states (None for the start pose)
+    target_pose: np.ndarray | None  # 5 arm joints to rewind to (the state at idx, or the start pose)
+    distance: float | None          # nearest-neighbour distance of the chosen state (None for the start pose)
+    progress: float | None          # estimated progress of the chosen state (None for the start pose)
+    shallow_idx: int | None         # the time-rule shallow target used as the reference
+    original_idx: int | None        # what the original deep rule (progress <= p_deep) selected
+    gap_frames: int | None          # shallow_idx - idx (None when there is no reference or for the start pose)
+    reason: str | None = None
+
+
+def select_rewind_target_deep(buffer_states, trigger_idx, index: RewindIndex, params: dict) -> DeepResult:
+    """
+    Deep rewind with a fallback chain (phase 0 correction):
+      1. original rule: last in-distribution, open-gripper state with progress <= params["p_deep"] (0.4);
+      2. if it is less than params["deep_min_gap_s"] (2.0 s) earlier than the shallow target (time rule, >= params["shallow_lead_s"]
+         before the trigger), or does not exist: last in-distribution, open-gripper state with progress <= params["deep_fallback_progress"]
+         (0.2) that is at least deep_min_gap_s earlier than the shallow target;
+      3. otherwise: the start pose params["start_pose"] (rewind the whole cache, then move to the start pose).
+    If no shallow target exists, the gap condition is not applied. Needs params["fps"] for the time conversions.
+    """
+    b = np.asarray(buffer_states, float)
+    if b.ndim != 2 or b.shape[1] < N_ARM + 1:
+        raise ValueError("buffer_states must have shape (N, 6): 5 arm joints + gripper")
+    if not 0 <= trigger_idx < len(b):
+        return DeepResult(None, None, None, None, None, None, None, None, "trigger_idx outside the buffer")
+    fps = params.get("fps", 30)
+    min_gap = int(round(params["deep_min_gap_s"] * fps))
+    sh = select_rewind_target_lead(b, trigger_idx, int(round(params.get("shallow_lead_s", 1.0) * fps)), index, params)
+    shallow_idx = sh.idx
+    orig = select_rewind_target(b, trigger_idx, params["p_deep"], index, params)
+    original_idx = orig.idx
+
+    def far_enough(i):
+        return shallow_idx is None or (shallow_idx - i) >= min_gap
+
+    if orig.idx is not None and far_enough(orig.idx):
+        return DeepResult("original", orig.idx, b[orig.idx, :N_ARM].copy(), orig.distance, orig.progress, shallow_idx, original_idx,
+                          None if shallow_idx is None else shallow_idx - orig.idx)
+    fb = select_rewind_target(b, trigger_idx, params["deep_fallback_progress"], index, params)
+    # last state with progress <= fallback that is far enough before the shallow target
+    s = b[: trigger_idx + 1]
+    dist, nn = index.query(s[:, :N_ARM])
+    ok = (dist <= params["tau"]) & (s[:, N_ARM] >= params["gripper_open_threshold"]) & (index.progress[nn] <= params["deep_fallback_progress"])
+    if shallow_idx is not None:
+        ok &= np.arange(len(s)) <= shallow_idx - min_gap
+    if ok.any():
+        i = int(np.flatnonzero(ok)[-1])
+        return DeepResult("progress_le_0.2", i, b[i, :N_ARM].copy(), float(dist[i]), float(index.progress[nn[i]]), shallow_idx, original_idx,
+                          None if shallow_idx is None else shallow_idx - i)
+    return DeepResult("start_pose", None, np.asarray(params["start_pose"], float), None, None, shallow_idx, original_idx, None)

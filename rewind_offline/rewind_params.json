@@ -8,6 +8,17 @@
   "gripper_open_threshold_grasp_detection": 30.0,
   "p_shallow": 0.9,
   "p_deep": 0.4,
+  "shallow_lead_s": 1.0,
+  "deep_min_gap_s": 2.0,
+  "deep_fallback_progress": 0.2,
+  "start_pose": [
+    -2.373626470565796,
+    -103.16483306884766,
+    94.68132019042969,
+    62.68132019042969,
+    -6.1978020668029785
+  ],
+  "start_pose_definition": "per-joint median of the 5 arm joints over the idle frames before the arm-motion onset, all 50 expert demos",
   "units_note": "not read from the recording configuration; inferred: LeRobot SOFollowerConfig.use_degrees default True (arm joints in degrees, gripper 0-100)",
   "fps": 30,
   "arm_joints": [
