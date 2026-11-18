@@ -1,0 +1,36 @@
+{
+  "trial_id": "U05",
+  "position_id": "P1",
+  "attempt": 1,
+  "dataset_repo_id": "YKB0123/rollout_trunc_U05_a1_20261114_164104",
+  "started_unix": 1794642047.9270592,
+  "ended_unix": 1794642105.6985273,
+  "early_end_key": false,
+  "return_code": 0,
+  "placement": {
+    "trial_id": "U05",
+    "position_id": "P1",
+    "target_x": 386.0,
+    "target_y": 182.0,
+    "measured_x": 387.53,
+    "measured_y": 182.17,
+    "dx": 1.53,
+    "dy": 0.17,
+    "dist": 1.54,
+    "timestamp_iso": "2026-11-14T16:40:40+09:00",
+    "timestamp_unix": 1794642040.316
+  },
+  "inference": {
+    "n_action_steps": 1,
+    "temporal_ensemble_coeff": 0.01
+  },
+  "episode_time_s": 30,
+  "chunks": {
+    "n_steps": 888,
+    "chunk_shape": [
+      100,
+      6
+    ],
+    "postproc_failed": 0
+  }
+}

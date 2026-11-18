@@ -1,0 +1,5 @@
+position_id,model,n,success,closes_mean,grasp_t_med,corr_px_med,aim_x_med,aim_y_med
+P1,C,8,2,1.75,7.3,0.0,-5.46,21.42
+P1,C_trunc,8,0,2.0,12.5,0.0,-5.82,28.28
+P2,C,8,6,1.25,6.0,0.23,-8.96,7.08
+P2,C_trunc,8,0,2.0,8.63,1.39,-12.85,5.51

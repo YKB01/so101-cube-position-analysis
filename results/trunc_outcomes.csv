@@ -1,0 +1,34 @@
+trial_id,attempt,outcome,failure_type,note,timestamp_unix
+U01,1,success,,1 trial,1794641417.261
+U02,1,fail,edge_not_grasped,,1794641502.316
+U03,1,fail,edge_not_grasped,,1794641597.037
+U04,1,fail,edge_not_grasped,,1794642012.916
+U05,1,fail,edge_not_grasped,,1794642105.699
+U06,1,fail,edge_not_grasped,,1794642196.417
+U07,1,fail,edge_not_grasped,,1794642290.764
+U08,1,fail,edge_not_grasped,,1794642382.750
+U09,1,success,,1 trial,1794642470.587
+U10,1,fail,edge_not_grasped,,1794642557.249
+U11,1,fail,edge_not_grasped,,1794642646.349
+U12,1,fail,edge_not_grasped,,1794642728.462
+U13,1,fail,edge_not_grasped,,1794642830.128
+U14,1,fail,edge_not_grasped,,1794642917.170
+U15,1,fail,edge_not_grasped,,1794643044.401
+U16,1,fail,edge_not_grasped,,1794643144.596
+U17,1,fail,edge_not_grasped,,1794643238.820
+U18,1,fail,edge_not_grasped,,1794643328.445
+U19,1,interrupted,,,1794643381.189
+U19,2,success,,1 trial,1794643511.159
+U20,1,fail,edge_not_grasped,,1794643602.314
+U21,1,fail,edge_not_grasped,,1794643708.423
+U22,1,success,,1 trial,1794643779.981
+U23,1,success,,1 trial,1794643852.253
+U24,1,fail,edge_not_grasped,,1794643936.717
+U25,1,fail,edge_not_grasped,,1794644025.163
+U26,1,success,,1 trial,1794644087.056
+U27,1,success,,1 trial,1794644165.432
+U28,1,fail,edge_not_grasped,,1794644249.072
+U29,1,fail,edge_not_grasped,,1794644331.723
+U30,1,fail,cube_pushed_away,,1794644396.383
+U31,1,success,,1 trial,1794644473.191
+U32,1,fail,edge_not_grasped,,1794644556.825

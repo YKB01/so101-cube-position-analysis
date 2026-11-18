@@ -1,0 +1,13 @@
+{
+  "nonce": "d96a6cc0be926bb42618bb2c4b8abc39",
+  "key": {
+    "B": {
+      "model": "C_trunc",
+      "checkpoint": "/home/ykb/Checkpoints/act_red_cube_expert50_trunc20_ft5000/checkpoints/005000/pretrained_model"
+    },
+    "A": {
+      "model": "C",
+      "checkpoint": "/home/ykb/Checkpoints/act_red_cube_expert50_expert20_ft5000/checkpoints/005000/pretrained_model"
+    }
+  }
+}

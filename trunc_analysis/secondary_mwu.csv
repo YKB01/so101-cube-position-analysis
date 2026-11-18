@@ -1,0 +1,9 @@
+metric,n_Ctrunc,n_C,median_Ctrunc,median_C,p,rank_biserial
+closes (addendum 01),16,16,2.0000,1.0000,0.0031,0.5000
+first grasp time (s),16,16,9.0667,6.7500,0.0000,0.9844
+"mean arm speed, first 10 s",16,16,23.4133,27.7545,0.0000,-1.0000
+pan correction before grasp (px),16,15,0.8123,0.0000,0.0956,0.3417
+correction time (s),16,15,0.4500,0.5667,0.2181,-0.2625
+aim error x at grasp (px),16,16,-9.6873,-6.6838,0.0864,-0.3594
+aim error y at grasp (px),16,16,15.3779,13.2764,0.4856,0.1484
+aim error x at reach end (px),16,15,-9.9104,-6.1765,0.0504,-0.4167
