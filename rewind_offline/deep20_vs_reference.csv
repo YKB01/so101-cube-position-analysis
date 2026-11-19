@@ -1,0 +1,5 @@
+label,frames,first_frame_dist_from_start,time_to_first_grasp_s,mean_speed,pre_grasp_speed,jerk,n_episodes
+new corrections after deep rewind (20),481.50,138.31,3.38,25.14,19.92,2332.15,20
+10/15 DAgger corrections (20),455.50,216.90,3.72,29.38,14.63,2981.51,20
+11/12 new expert (20),598.00,8.05,7.23,30.07,29.74,2495.70,20
+7/31 expert (50),598.00,6.38,7.25,29.79,33.39,2384.00,50

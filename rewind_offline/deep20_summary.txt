@@ -1,0 +1,24 @@
+collection run run_20261119_120625: 30 attempts, 20 saved, 10 discarded; 2026-11-19T12:07:11 .. 2026-11-19T12:30:11
+triggers: {'empty_grasp': 30}; trigger time median 7.9 s (range 6.8-17.5)
+rewind level (saved): {'original': 19, 'progress_le_0.2': 1}; (all attempts): {'original': 29, 'progress_le_0.2': 1}
+queue remaining at the trigger: median 62 (range 8-94); after clear [0]; at start [0]
+target 4.1 s before the trigger (range 3.5-13.5), progress median 0.39, nn distance max 0.35 (tau 0.449)
+rewind: planned 2.6 s, actual 3.0 s (max 8.8); joint distance 68 deg (45-149); final error 3.0 deg (max 3.9), 0.25 of tau at most
+align: error 1.23 deg (max 1.67), retries {0: 29, 1: 1}; human correction 16.1 s (range 13.2-23.2)
+loop period: autonomous mean 33.54 ms, max over episodes 53 ms; human mean 33.47 ms, max 36 ms
+lighting: first-frame table gray median 117.2 (range 105.2-123.1); bright state (>= 117.5) in 12 of 30 attempts; camera auto exposure [3], white balance auto [1]
+placement distance 1.7 px (max 2.9); inside the window: 30 of 30
+
+--- replay versus direct move (all 30 attempts) ---
+direct joint-space distance trigger -> target: median 68 deg; replayed path length (points < 2 deg merged): median 105 deg = 1.36x (max 7.0x, episode 8); largest departure of the replayed path from the straight joint-space line: median 15 deg (max 42)
+time at 1.5 deg per joint per tick: direct 1.2 s, replay planned 2.6 s, replay actual 3.0 s
+
+--- cube movement (segment videos; fully visible detections only; repeat detections of an unmoved cube agree within ~1 px) ---
+evaluable segments: 28 of 30; cube moved > 3 px between the start of the episode and the first visible frame of the segment (policy phase): 12; moved > 3 px inside the rewind segment: 7 (episodes [2, 11, 12, 15, 23, 26, 27]), of which first movement after the rewind motion started (frame >= 32): [2, 11, 15, 23, 27], during the gripper opening (frame < 32): [12, 26]
+
+                                        frames  first_frame_dist_from_start  time_to_first_grasp_s  mean_speed  pre_grasp_speed    jerk  n_episodes
+label                                                                                                                                              
+new corrections after deep rewind (20)   481.5                        138.3                    3.4        25.1             19.9  2332.2          20
+10/15 DAgger corrections (20)            455.5                        216.9                    3.7        29.4             14.6  2981.5          20
+11/12 new expert (20)                    598.0                          8.1                    7.2        30.1             29.7  2495.7          20
+7/31 expert (50)                         598.0                          6.4                    7.2        29.8             33.4  2384.0          50

@@ -81,6 +81,6 @@ Dataset checks (`scripts/verify_rewind_dataset.py`) passed for both datasets.
    - `cube_displaced` (2; episodes 21, 22, position R12): cube pushed by the arm during the policy phase (24.7 and 17.6 px).
    - `cube_slightly_moved` (2; episodes 2 and 8): cube slightly moved by the arm (measured 4.4 px and 0.1 px after the rewind; operator confirmed).
    The discarded episodes were repeated at the same position as required. Their rewind segments stay in `YKB0123/rewind_deep_20_rewind_seg` and are flagged `discarded` in `rewind_segment_meta.csv`.
-2. **Saved episode with a moved cube**: attempt 23 (R12, saved as correction episode index 15) had the cube moved by 12.1 px by the failed policy phase; it is kept (the correction was done on the cube's new position).
+2. **Saved episode with a moved cube**: attempt 23 (R12, saved as correction episode index 15): the cube was displaced by about 12 px **during the rewind** (it was in place at the start of the segment; segment video analysis, `rewind_offline/report_deep20_collection.md`); the episode is kept (the correction was done on the cube's new position).
 3. The deep rewind level was `original` for 19 saved episodes and `progress_le_0.2` for 1; no episode used the start pose.
 4. Rewind final error (max joint, deg) median 3.0 (range 1.4-3.9), larger than in the dry runs (0.6-1.2) because of the steady-state error at these poses; normalised distance at most 0.25 of tau.
