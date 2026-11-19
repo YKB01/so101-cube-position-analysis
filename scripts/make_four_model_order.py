@@ -2,8 +2,8 @@
 """
 Create protocol/four_model_trial_order.csv and protocol/four_model_key.json for the four-model test (C, R, C_trunc, deep; P1 and P2, 8 trials per model and position, 64 trials V01-V64).
 
-* four_model_trial_order.csv: P1 and P2 in random order; each position has 32 trials = 8 blocks of 4; every block is a random permutation of the four blind codes A-D
-  (so the four models take turns inside a position, each exactly 8 times). numpy default_rng(seed); the seed goes to protocol/four_model_order_seed.txt.
+* four_model_trial_order.csv: 16 blocks of 4 trials that alternate between the two positions (P1 block, P2 block, ... - which position comes first is random); each position gets 8 blocks;
+  every block is a random permutation of the four blind codes A-D (so each model is tested exactly 8 times per position). numpy default_rng(seed); the seed goes to protocol/four_model_order_seed.txt.
 * four_model_key.json: random assignment of the codes A-D to the four checkpoints (drawn with `secrets`, never printed); SHA-256 of the file in protocol/four_model_key.sha256.
   The key file stays untracked until the test is finished. The deep checkpoint path is fixed now; the checkpoint is created by the training that precedes the test.
 Refuses to overwrite existing files.
@@ -21,10 +21,11 @@ if any(t.exists() for t in targets):
     sys.exit("four-model protocol files already exist; refusing to overwrite")
 seed = secrets.randbits(32); rng = np.random.default_rng(seed)
 rows, n = [], 0
-for pid in rng.permutation(["P1", "P2"]):
-    for _ in range(8):
-        for code in rng.permutation(list("ABCD")):
-            n += 1; rows.append((f"V{n:02d}", pid, code))
+first = "P1" if rng.integers(2) == 0 else "P2"; second = "P2" if first == "P1" else "P1"
+for b in range(16):
+    pid = first if b % 2 == 0 else second
+    for code in rng.permutation(list("ABCD")):
+        n += 1; rows.append((f"V{n:02d}", pid, code))
 df = pd.DataFrame(rows, columns=["trial_id", "position_id", "model_code"])
 assert len(df) == 64 and (df.groupby(["position_id", "model_code"]).size() == 8).all()
 df.to_csv(PROTO / "four_model_trial_order.csv", index=False)
