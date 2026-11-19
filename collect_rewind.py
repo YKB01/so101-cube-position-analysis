@@ -184,6 +184,32 @@ def save_png(path, rgb):
     cv2.imwrite(str(path), cv2.cvtColor(np.asarray(rgb), cv2.COLOR_RGB2BGR))
 
 
+def placement_overlay(rgb, target, tol_px, history, scale=2.0, label=""):
+    """BGR image for the live placement window: camera frame (scaled) with the target cross, the tolerance circle, the detected cube and its offset.
+    history = list of recent detections (cx, cy); the target turns green when their mean is inside the tolerance."""
+    import cv2
+    img = cv2.cvtColor(np.ascontiguousarray(rgb), cv2.COLOR_RGB2BGR)
+    img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
+    tx, ty = target
+    pts = [h for h in history if not np.isnan(h[0])]
+    mean = np.mean(pts, axis=0) if len(pts) >= 3 else None
+    ok = mean is not None and float(np.hypot(mean[0] - tx, mean[1] - ty)) <= tol_px
+    col = (0, 200, 0) if ok else (0, 0, 255)
+    c = (int(round(tx * scale)), int(round(ty * scale)))
+    cv2.line(img, (c[0] - 40, c[1]), (c[0] + 40, c[1]), col, 1, cv2.LINE_AA)
+    cv2.line(img, (c[0], c[1] - 40), (c[0], c[1] + 40), col, 1, cv2.LINE_AA)
+    cv2.circle(img, c, max(int(round(tol_px * scale)), 2), col, 1, cv2.LINE_AA)
+    if mean is not None:
+        d = (int(round(mean[0] * scale)), int(round(mean[1] * scale)))
+        cv2.drawMarker(img, d, (255, 0, 255), cv2.MARKER_CROSS, 14, 1, cv2.LINE_AA)
+        txt = f"{label} off by ({mean[0] - tx:+.1f}, {mean[1] - ty:+.1f}) px, distance {np.hypot(mean[0] - tx, mean[1] - ty):.1f} px  {'OK - press s' if ok else 'move the cube'}"
+    else:
+        txt = f"{label} cube not detected"
+    cv2.rectangle(img, (0, 0), (img.shape[1], 26), (0, 0, 0), -1)
+    cv2.putText(img, txt, (8, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.55, col if mean is not None else (0, 200, 255), 1, cv2.LINE_AA)
+    return img
+
+
 class AutoLog:
     """Everything the policy did in one episode (not part of the training datasets): video + states/actions."""
 
@@ -480,6 +506,9 @@ class Collector:
             print(f"WARNING: the protocol window is {self.cfg['time_window']}; it is now {datetime.now():%H:%M}. Episodes started now are flagged outside_time_window.", flush=True)
         self.slide_follower_to_leader()
         tick, self._place, self._start_warned = 0, None, False
+        hist, win = [], None
+        if self.order is not None and self.cfg.get("show_placement_window"):
+            win = "RESET: place the cube (keys go to the terminal - keep it focused)"
         while True:
             t0 = time.perf_counter()
             ks = self.poll_keys(allow_discard=False, extra=("s", "q"))
@@ -490,10 +519,20 @@ class Collector:
                 cx, cy = cube_position(obs["front"])
                 d = float(np.hypot(cx - tx, cy - ty)) if not np.isnan(cx) else float("nan")
                 self._place = d
+                hist = (hist + [(cx, cy)])[-5:]
                 msg = "cube not detected" if np.isnan(d) else f"detected ({cx:.1f}, {cy:.1f}), off by ({cx - tx:+.1f}, {cy - ty:+.1f}) px, distance {d:.1f} px -> {'OK' if d <= self.place_tol else 'MOVE the cube'}"
                 print(f"\r  {pid}: target ({tx:.0f}, {ty:.0f}) | {msg}        ", end="", flush=True)
+            if win is not None and self.order is not None and self.pos_ptr < len(self.order) and obs.get("front") is not None and tick % 2 == 0:
+                try:
+                    import cv2
+                    pid, tx, ty = self.order[self.pos_ptr]
+                    cv2.imshow(win, placement_overlay(obs["front"], (tx, ty), self.place_tol, hist, self.cfg["placement_window_scale"], pid))
+                    cv2.waitKey(1)
+                except Exception as e:                      # no display: keep the text feedback only
+                    print(f"\n(placement window unavailable: {e})", flush=True); win = None
             tick += 1
             if "q" in ks:
+                self._close_window(win)
                 print(flush=True)
                 return "quit"
             if "s" in ks:
@@ -502,9 +541,19 @@ class Collector:
                     self._start_warned = True
                     print(f"\n  the cube is not within {self.place_tol:.0f} px of the target: press [s] again to start anyway (recorded), or move the cube", flush=True)
                     continue
+                self._close_window(win)
                 print(flush=True)
                 return "start"
             self.sleep_to(t0)
+
+    @staticmethod
+    def _close_window(win):
+        if win is not None:
+            try:
+                import cv2
+                cv2.destroyWindow(win); cv2.waitKey(1)
+            except Exception:
+                pass
 
     def run_episode(self):
         c = self.cfg

@@ -59,5 +59,7 @@
   "settle_max_err_deg": 6.0,
   "time_window": "10:00-16:00",
   "order_csv": "",
-  "positions_json": "protocol/rewind_collect_positions.json"
+  "positions_json": "protocol/rewind_collect_positions.json",
+  "show_placement_window": true,
+  "placement_window_scale": 2.0
 }

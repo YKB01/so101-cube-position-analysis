@@ -45,7 +45,7 @@ Collection ends when **20 corrections are saved** (discarded episodes do not cou
 
 ## 5. Cube positions
 The 20 cube positions of the 10/15 recovery episodes (`protocol/rewind_collect_positions.json`, R01-R20 = recovery episode 1-20; x 337-407, y 177-253 px), one episode each, in the random order of `protocol/rewind_collect_order.csv` (seed in `rewind_collect_order_seed.txt`).
-Placement: `collect_rewind.py` holds the camera, so `place_cube_overlay.py` cannot run at the same time; in the RESET phase the script detects the cube at 5 Hz and prints its offset from the target; the 3 px tolerance is enforced (a second `s` starts anyway and the distance is recorded as `placement_dist_px`).
+Placement: `collect_rewind.py` holds the camera, so `place_cube_overlay.py` cannot run at the same time; in the RESET phase a live camera window shows the target cross and the 3 px tolerance circle (green when the detected cube is inside) and the terminal prints the offset at 5 Hz; the 3 px tolerance is enforced (a second `s` starts anyway and the distance is recorded as `placement_dist_px`).
 A discarded episode is repeated at the same position; the position pointer of the script advances only after a saved episode.
 
 ## 6. Procedure per episode
