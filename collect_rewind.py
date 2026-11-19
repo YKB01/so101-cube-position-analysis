@@ -48,7 +48,7 @@ ARM_KEYS = ["shoulder_pan.pos", "shoulder_lift.pos", "elbow_flex.pos", "wrist_fl
 GRIP_KEY = "gripper.pos"
 KEYS6 = ARM_KEYS + [GRIP_KEY]
 META_COLUMNS = [
-    "episode_id", "timestamp", "position_id", "position_target_x", "position_target_y", "saved_episode_index", "segment_episode_index", "rewind_mode", "level", "rewind_segment_saved",
+    "episode_id", "timestamp", "position_id", "position_target_x", "position_target_y", "placement_dist_px", "saved_episode_index", "segment_episode_index", "rewind_mode", "level", "rewind_segment_saved",
     "cube_start_x", "cube_start_y", "trigger_type", "trigger_frame", "trigger_time_s",
     "target_buffer_index", "target_episode_frame", "target_time_s", "target_progress", "target_nn_distance",
     "rewind_planned_s", "rewind_actual_s", "n_waypoints", "joint_distance_deg", "settled",
@@ -229,7 +229,10 @@ class Collector:
             import pandas as pd
             pos = {p["position_id"]: p for p in json.loads(Path(cfg["positions_json"]).read_text())["positions"]}
             self.order = [(r.position_id, pos[r.position_id]["cx"], pos[r.position_id]["cy"]) for r in pd.read_csv(cfg["order_csv"]).itertuples()]
+            self.place_tol = float(json.loads(Path(cfg["positions_json"]).read_text()).get("tolerance_px", 3.0))
         self.pos_ptr = 0
+        self._place = None                      # last placement reading in the RESET phase: (distance px or nan)
+        self._start_warned = False
         self.meta_path = self.out / "rewind_meta.csv"
         self.dry = cfg["dry_run"]
         self.align_only, self.policy_only = cfg["align_only"], cfg["policy_only"]
@@ -352,6 +355,8 @@ class Collector:
         self.ds = make(cfg["repo_id"], cfg["root"])
         self.seg_ds = make(cfg["repo_id_rewind_seg"], cfg["root_rewind_seg"])
         self.episode_counter = self.ds.num_episodes
+        if cfg["resume"] and self.order is not None:
+            self.pos_ptr = self.ds.num_episodes          # one position per saved correction
         print(f"datasets: corrections {self.ds.repo_id} ({self.ds.num_episodes} episodes) | rewind segments {self.seg_ds.repo_id} ({self.seg_ds.num_episodes})", flush=True)
 
     # ------------------------------------------------------------------------------------------- I/O primitives
@@ -468,20 +473,36 @@ class Collector:
         if self.order is not None:
             if self.pos_ptr < len(self.order):
                 pid, px_, py_ = self.order[self.pos_ptr]
-                print(f"NEXT POSITION: {pid} at ({px_:.0f}, {py_:.0f}) px ({self.pos_ptr + 1}/{len(self.order)}); place the cube with scripts/place_cube_overlay.py", flush=True)
+                print(f"NEXT POSITION: {pid} at ({px_:.0f}, {py_:.0f}) px ({self.pos_ptr + 1}/{len(self.order)}); place the cube - the live line below shows how far it is from the target", flush=True)
             else:
                 print("all positions of the order file are done", flush=True)
         if not LP.inside_window(datetime.now(), self.cfg["time_window"]):
             print(f"WARNING: the protocol window is {self.cfg['time_window']}; it is now {datetime.now():%H:%M}. Episodes started now are flagged outside_time_window.", flush=True)
         self.slide_follower_to_leader()
+        tick, self._place, self._start_warned = 0, None, False
         while True:
             t0 = time.perf_counter()
             ks = self.poll_keys(allow_discard=False, extra=("s", "q"))
             obs = self.get_obs()
             self.teleop_tick(obs)
+            if self.order is not None and self.pos_ptr < len(self.order) and obs.get("front") is not None and tick % 6 == 0:     # live placement feedback, 5 Hz
+                pid, tx, ty = self.order[self.pos_ptr]
+                cx, cy = cube_position(obs["front"])
+                d = float(np.hypot(cx - tx, cy - ty)) if not np.isnan(cx) else float("nan")
+                self._place = d
+                msg = "cube not detected" if np.isnan(d) else f"detected ({cx:.1f}, {cy:.1f}), off by ({cx - tx:+.1f}, {cy - ty:+.1f}) px, distance {d:.1f} px -> {'OK' if d <= self.place_tol else 'MOVE the cube'}"
+                print(f"\r  {pid}: target ({tx:.0f}, {ty:.0f}) | {msg}        ", end="", flush=True)
+            tick += 1
             if "q" in ks:
+                print(flush=True)
                 return "quit"
             if "s" in ks:
+                bad = self.order is not None and self.pos_ptr < len(self.order) and (self._place is None or np.isnan(self._place) or self._place > self.place_tol)
+                if bad and not self._start_warned:
+                    self._start_warned = True
+                    print(f"\n  the cube is not within {self.place_tol:.0f} px of the target: press [s] again to start anyway (recorded), or move the cube", flush=True)
+                    continue
+                print(flush=True)
                 return "start"
             self.sleep_to(t0)
 
@@ -546,6 +567,8 @@ class Collector:
         self.autolog = AutoLog(ed, self.fps, size)
         if rgb is not None:
             meta.update(self.episode_covariates(rgb))
+            if "position_target_x" in meta and not np.isnan(meta["cube_start_x"]):
+                meta["placement_dist_px"] = float(np.hypot(meta["cube_start_x"] - meta["position_target_x"], meta["cube_start_y"] - meta["position_target_y"]))
         if self.dry:
             return self.autonomous_dry(meta)
         self.clear_policy()
