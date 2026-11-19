@@ -31,7 +31,7 @@ Collection ends when **20 corrections are saved** (discarded episodes do not cou
 ## 3b. Checks before the collection
 1. **Two `--policy_only` runs with setting A** (about 3 episodes each is enough):
    `python collect_rewind.py --policy_only --policy_path ~/Checkpoints/act_red_cube_50_100000 --n_action_steps 100 --temporal_ensemble_coeff none --compare_model baseline_default`
-   Pass when: the printed configuration says "MATCHES the requested settings" with `n_action_steps 100`, `temporal_ensemble_coeff None`, `has_temporal_ensembler False`; the network runs about once per 100 ticks (median gap ~100 ticks, queue length up to 99: open-loop chunks);
+   Pass when: the printed configuration says "MATCHES the requested settings" with `n_action_steps 100`, `temporal_ensemble_coeff None`, `has_temporal_ensembler False`; the network runs once per 100 ticks (the action queue is refilled every 100 ticks, queue length up to 99: open-loop chunks; counted from the queue, not from timing, because the observation pre-processing costs ~17 ms on every tick);
    control rate about 30 Hz; the first close time is within the 11/4 baseline evaluation with the default settings (median 6.33 s, IQR 6.23-6.42, range 5.9-7.8 s) and the speed curve looks like its reference.
 2. `scripts/run_trial.py PRACTICE` once or twice, then `python scripts/check_trial_covariates.py`: the covariates are written and the control-loop period is not longer than in the earlier trials (new camera-reading thread).
 3. `git status` clean for tracked files (`git_dirty` false in `config_used.json`).

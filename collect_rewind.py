@@ -1276,7 +1276,13 @@ def _collector_methods():
             self.ds.save_episode()
         S = np.array(states); dts = np.array(dts[1:]); t_inf, t_obs = np.array(t_inf), np.array(t_obs)
         np.savez(ed / "ticks.npz", t=np.array(T), dt_ms=np.array([0.0] + list(dts)), obs_ms=t_obs, infer_ms=t_inf, queue_len=np.array(qlen))
-        inf_ticks = np.flatnonzero(t_inf > 8.0)            # ticks on which the policy network ran (a pop from the action queue costs < 1 ms)
+        # ticks on which the policy network ran: with an action queue (n_action_steps > 1) it runs when the queue is refilled (queue length goes up);
+        # the timing is not usable for this: the observation pre-processing (~17 ms) is paid on every tick
+        q_arr = np.array(qlen)
+        if len(q_arr) and q_arr.max() >= 0:
+            inf_ticks = np.r_[0, np.flatnonzero(q_arr[1:] > q_arr[:-1]) + 1]
+        else:                                               # temporal ensembling or n_action_steps = 1: a new chunk on every tick
+            inf_ticks = np.arange(len(q_arr))
         inf_gap = np.diff(inf_ticks)
         gd = G.detect_first_grasp(S[:, 5]); gf = gd["grasp_frame"]
         sp = np.r_[0.0, np.linalg.norm(np.diff(S[:, :5], axis=0), axis=1) * 30.0]
