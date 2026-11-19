@@ -1,0 +1,11 @@
+episode_id,position_id,category,detail,source
+1,R11,arm_occluded_cube,the arm hid the cube after the rewind (cube not detected),operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+2,R11,cube_slightly_moved,cube slightly moved by the arm (measured 4.4 px); operator confirmed,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+5,R14,arm_occluded_cube,same,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+8,R08,cube_slightly_moved,cube slightly moved by the arm (operator confirmed; measured shift after the rewind 0.1 px); policy phase 17.5 s,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+10,R13,arm_occluded_cube,same,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+21,R12,cube_displaced,cube pushed by the arm during the policy phase: 24.7 px,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+22,R12,cube_displaced,cube pushed by the arm during the policy phase: 17.6 px,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+25,R18,arm_occluded_cube,same,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+26,R18,arm_occluded_cube,same,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
+29,R17,arm_occluded_cube,same,operator confirmation after reviewing the camera images (discard_review_*.png); during the session only 'operator_x' was recorded
