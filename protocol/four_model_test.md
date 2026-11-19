@@ -1,7 +1,7 @@
 # 四模型对照测试（预注册）：深回退 vs R、C、C_trunc
 
 本文件在测试开始前写定，测试期间不修改（偏差记入文末的偏差日志）。
-状态：**深回退模型的训练尚未完成**（第 3 节的检查项在训练后补写）；测试在训练、检查和第 8 节的赛前检查全部完成后进行。
+状态：深回退模型已训练完成，第 3 节和第 8 节的赛前检查已完成（2026-11-19 记录）；下一步是周六的 64 次测试。
 
 ## 1. 目的与假设
 - 已有结果：重测（11/14 13:45–15:11，P1+P2）R 7/16、C 15/16；截断对照那一场（16:29–17:22）C 8/16、C_trunc 0/16。
@@ -27,7 +27,13 @@
   `scripts/verify_deep_dataset.py`：状态、动作、时间戳、帧序号与来源逐条一致，310 帧解码图像一致，features 与 R、C 的训练集一致（`rewind_offline/deep_dataset_verification.txt`）。
 - 位置覆盖（`rewind_offline/coverage_four_models.csv`，方法同右侧测试的覆盖分析）：到测试位置最近的训练样本距离在四个模型之间相同（P1 7.5 px，P2 5.3 px，由专家数据决定）；一个方块宽（17 px）内的样本数
   P1：R 4（其中纠正数据 2），C/C_trunc 2（0），deep 4（2）；P2：R 35（4），C/C_trunc 36（5），deep 37（6）。
-- [ ] 训练命令、`train_config.json` 差别、loss 曲线对比：训练后填入。
+- **训练**（已完成，`~/Checkpoints/training_logs/act_red_cube_expert50_rewind_deep20_ft5000.log`，约 4 分钟）：
+  `lerobot-train --policy.path=~/Checkpoints/act_red_cube_50_100000 --dataset.repo_id=YKB0123/ykb_red_cube_expert50_rewind_deep20 --policy.optimizer_lr=5e-6 --policy.optimizer_lr_backbone=5e-6 --batch_size=8 --steps=5000 --save_freq=20000 --log_freq=200 --seed=42 --wandb.enable=false --policy.push_to_hub=false`（输出目录和 job 名为 `act_red_cube_expert50_rewind_deep20_ft5000`）。
+- **`train_config.json` 对比**（`rewind_offline/compare_training.py` -> `training_comparison.txt`）：deep、C、R、C_trunc 的 117 个键里只有 `dataset.repo_id`、`dataset.root`、`job_name`、`output_dir` 不同，
+  其余全部相同（5,000 步、批大小 8、种子 42、lr 与 backbone lr 5e-6、权重衰减 1e-4、梯度裁剪 10、num_workers 4）；四个模型的策略 `config.json` 完全相同，起点都是 `act_red_cube_50_100000`。
+- **loss 曲线**（每 200 步记录，`fig_training_loss.png`，`training_loss_curves.csv`）：第 5000 步的训练 loss：deep 0.047、C 0.058、R 0.052、C_trunc 0.046；最后 5 个记录点的平均：0.049 / 0.058 / 0.054 / 0.048。
+  deep 与 C_trunc 全程最低，C 最高，R 居中；四条曲线单调下降，没有发散或异常。训练 loss 是在各自的训练集上测的，不是模型好坏的指标，只用来核对训练正常。
+- 功能检查：deep checkpoint 可加载，预测有限，在 30 个专家帧上的平均误差 0.82 度（C 0.81 度）。
 
 ## 4. 测试位置、次数与顺序
 - 位置：**P1 (386, 182)** 和 **P2 (394, 212)**（`results/test_positions.json`；摆放方法、3 px 容差和参考图与重测、C_trunc 测试相同）。
@@ -59,9 +65,9 @@
 - 分析脚本在测试后写；解盲前先核对 key 的哈希。
 
 ## 8. 赛前检查
-1. 深回退模型训练完成，第 3 节补全，`git status` 对已跟踪文件无改动。
-2. `python scripts/run_trial.py PRACTICE` 空跑一次，`python scripts/check_trial_covariates.py`：协变量写入正常，控制周期不长于之前的试验。
-3. 四个 checkpoint 路径都存在，`sha256sum protocol/four_model_key.json` 等于 `four_model_key.sha256`。
+1. [已完成] 深回退模型训练完成，第 3 节补全，`git status` 对已跟踪文件无改动。
+2. [已完成] `python scripts/run_trial.py PRACTICE` 空跑一次，`python scripts/check_trial_covariates.py`：协变量写入正常（相机控制项运行期间读取、首帧灰度、周期统计），控制周期均值 33.64 ms，在之前 83 个试验的范围（33.46–33.77 ms）内；一次性数据已删除。
+3. [已完成] 四个 checkpoint 路径都存在，`sha256sum protocol/four_model_key.json` 等于 `four_model_key.sha256`（核对时不显示编码对应关系）。
 
 ## 局限
 - 每个模型只训练一个种子；每格 8 次，样本小；只有 P1、P2 两个位置。
