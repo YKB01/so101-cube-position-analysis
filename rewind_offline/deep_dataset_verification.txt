@@ -1,0 +1,7 @@
+merged: 70 episodes, 39711 frames (expert 50/29901 + corrections 20/9810)
+features identical to the expert dataset (no intervention column): True
+tasks: ['Pick up the red cube and place it inside the plastic box.'] (expert ['Pick up the red cube and place it inside the plastic box.'], corrections ['Pick up the red cube and place it inside the plastic box.'])
+state / action / timestamp / frame_index identical to the source in all 70 episodes: True (0 differ)
+index contiguous: True
+decoded images compared in 310 frames (first / middle / last of every episode + 100 random): identical
+RESULT: PASS

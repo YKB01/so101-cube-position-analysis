@@ -1,0 +1,21 @@
+saved_episode_index,episode_id,position_id,cx,cy,source,cube_start_x,cube_start_y,shift_from_start_px
+0,3,R11,401.80,214.06,last visible during the rewind,406.01,212.58,4.46
+1,4,R15,353.46,188.63,correction first frame,353.14,188.64,0.32
+2,6,R14,403.48,220.37,last visible during the rewind,406.21,220.34,2.73
+3,7,R05,353.37,204.34,correction first frame,354.45,204.42,1.09
+4,9,R08,338.28,253.88,correction first frame,338.09,254.00,0.23
+5,11,R13,401.80,217.51,correction first frame,406.71,216.82,4.96
+6,12,R06,402.59,215.10,last visible during the rewind,404.21,212.93,2.71
+7,13,R01,353.82,212.25,correction first frame,353.51,212.49,0.40
+8,14,R02,350.28,222.53,correction first frame,357.52,221.90,7.27
+9,15,R10,396.38,196.18,correction first frame,401.45,195.65,5.09
+10,16,R04,356.46,208.21,correction first frame,358.16,211.09,3.35
+11,17,R19,353.91,183.71,correction first frame,353.65,184.06,0.44
+12,18,R03,353.26,215.95,correction first frame,360.69,221.37,9.19
+13,19,R07,350.79,216.45,correction first frame,350.38,216.12,0.53
+14,20,R09,395.92,199.35,correction first frame,401.30,198.16,5.52
+15,23,R12,363.87,239.55,correction first frame,364.12,234.10,5.45
+16,24,R20,355.45,207.83,correction first frame,356.69,209.18,1.83
+17,27,R18,404.48,193.65,correction first frame,406.15,191.35,2.84
+18,28,R16,394.59,183.58,correction first frame,393.98,179.46,4.17
+19,30,R17,392.45,177.17,correction first frame,394.57,176.03,2.41

@@ -47,6 +47,8 @@ PROTOCOLS = {   # --protocol: which pre-registered test is being run (files are 
                    outcomes="results/retest_outcomes.csv", placement="results/placement_log.csv", prefix="retest"),
     "trunc": dict(order="protocol/trunc_trial_order.csv", key="protocol/trunc_model_key.json", raw="results/trunc_raw",
                   outcomes="results/trunc_outcomes.csv", placement="results/trunc_placement_log.csv", prefix="trunc"),
+    "four": dict(order="protocol/four_model_trial_order.csv", key="protocol/four_model_key.json", raw="results/four_model_raw",
+                 outcomes="results/four_model_outcomes.csv", placement="results/four_model_placement_log.csv", prefix="four"),
 }
 ORDER_CSV, KEY_JSON, PREFIX = ROOT / "protocol/trial_order.csv", ROOT / "protocol/model_key.json", "retest"
 RAW = ROOT / "results/retest_raw"
