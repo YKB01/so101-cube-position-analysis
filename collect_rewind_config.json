@@ -61,5 +61,7 @@
   "order_csv": "",
   "positions_json": "protocol/rewind_collect_positions.json",
   "show_placement_window": true,
-  "placement_window_scale": 2.0
+  "placement_window_scale": 2.0,
+  "cube_full_area_px": 223.0,
+  "cube_move_prompt_px": 10.0
 }

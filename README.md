@@ -145,3 +145,7 @@ conditions match, whether the truncation-session drift can be explained by it, a
 `analyze_time_behavior.py` -> `analyze_behavior_lighting.py`; policy sensitivity: `policy_sensitivity.py`, `start_sensitivity.py`, `exposure_state_test.py`. First frames are cached in `lighting_analysis/cache/` (not committed).
 - Collection protocol: `protocol/rewind_collect_deep.md` (+ `rewind_collect_deep_config.json`, `rewind_collect_positions.json`, `rewind_collect_order.csv`). Before it, run `--policy_only` with `--n_action_steps 100 --temporal_ensemble_coeff none --compare_model baseline_default`
   (reference: the 11/4 baseline evaluation with the default settings) and `scripts/run_trial.py PRACTICE` + `scripts/check_trial_covariates.py`.
+
+## To do (planned, not started)
+- **After 11/24:** rewind path option `--rewind_path replay|direct` (two-waypoint joint-space move to the rewind target with the existing step limit, joint clamp and settle test; `replay` stays the default for the collected data) and, after an empty grasp (gripper reading < 4.2),
+  opening the gripper while the arm lifts instead of before it moves. Motivation: in the 20-correction collection the cube was knocked during the rewind in 25% of the attempts (`rewind_offline/report_deep20_collection.md`, section 3). Planned test: `--dry_run`, then 10 episodes per path type on the same positions, outcome = cube shift in the segment video.

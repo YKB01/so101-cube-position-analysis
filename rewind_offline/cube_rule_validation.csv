@@ -1,0 +1,31 @@
+episode_id,position,operator_kept,operator_reason,cube_ref_source,shift_from_start_px,old_cube_detected_after_align
+1,R11,False,arm_occluded_cube,last_visible_in_rewind,3.16,False
+2,R11,False,cube_slightly_moved,after_align,4.44,True
+3,R11,True,,last_visible_in_rewind,4.46,True
+4,R15,True,,after_align,0.39,True
+5,R14,False,arm_occluded_cube,never fully visible,,False
+6,R14,True,,last_visible_in_rewind,2.73,True
+7,R05,True,,after_align,1.18,True
+8,R08,False,cube_slightly_moved,after_align,0.11,True
+9,R08,True,,after_align,0.14,True
+10,R13,False,arm_occluded_cube,last_visible_in_rewind,1.19,False
+11,R13,True,,after_align,4.80,True
+12,R06,True,,last_visible_in_rewind,2.71,True
+13,R01,True,,after_align,0.11,True
+14,R02,True,,after_align,7.34,True
+15,R10,True,,after_align,5.12,True
+16,R04,True,,after_align,3.33,True
+17,R19,True,,after_align,0.55,True
+18,R03,True,,after_align,9.32,True
+19,R07,True,,after_align,0.29,True
+20,R09,True,,after_align,5.24,True
+21,R12,False,cube_displaced,last_visible_in_rewind,24.07,True
+22,R12,False,cube_displaced,after_align,17.57,True
+23,R12,True,,after_align,12.07,True
+24,R20,True,,after_align,2.12,True
+25,R18,False,arm_occluded_cube,last_visible_in_rewind,6.46,False
+26,R18,False,arm_occluded_cube,last_visible_in_rewind,3.50,False
+27,R18,True,,after_align,2.61,True
+28,R16,True,,after_align,3.38,True
+29,R17,False,arm_occluded_cube,never fully visible,,False
+30,R17,True,,after_align,2.24,True

@@ -53,3 +53,8 @@ I would implement it as an option and test it before using it for collection:
 - The failed attempt itself moved the cube by more than 3 px in 12 of 28 attempts; 9 of these were kept as saved episodes, so some corrections start from a cube displaced by the policy (`start_to_first_px` in `deep20_attempts.csv`).
 - Rewind final error (median 3.0 deg) is larger than in the dry runs (0.6-1.2 deg) because of the steady-state error at these poses; it is below 0.25 of tau and the leader is aligned to the measured pose, so the human part is not affected.
 - 12 of 30 attempts were in the bright automatic-exposure state, within the range of the 11/14 sessions.
+
+## 5. Conclusion
+- The 20 corrections are complete and consistent with the earlier intervention data in format; they start closer to the start pose than the 10/15 corrections (138 against 217 joint units) and are about as smooth as the expert data.
+- **During the rewind the cube was knocked in 25% of the attempts (7 of 28 evaluable segments, more than 3 px): this is a limitation of the current replay-style rewind.** The planned changes (`--rewind_path direct`, opening the gripper while lifting after an empty grasp) are postponed until after 11/24 (see the to-do list in the README); the data collected so far keep the replay.
+- Policy-phase displacements (12 of 28 attempts) and cube hiding at the target pose are separate effects; the cube-position decision is being changed to use the last fully visible position during the rewind (to-do 1, cube rule).

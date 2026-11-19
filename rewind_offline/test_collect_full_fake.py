@@ -52,7 +52,7 @@ def main(mode="deep"):
     col.buffer = CR.RC.StateBuffer(15, 30)
     for s in Q[max(0, trig - 450): trig + 1]: col.buffer.append(s)
     col.keys = T.FakeKeys({4000: ["s"], 4600: ["e"]})
-    meta = dict(episode_id=1, rewind_mode=mode, discarded=False, trigger_frame=trig, trigger_time_s=trig / 30, trigger_type="manual")
+    meta = dict(episode_id=1, rewind_mode=mode, discarded=False, trigger_frame=trig, trigger_time_s=trig / 30, trigger_type="manual", cube_start_x=308.5, cube_start_y=258.5)
     ed = tmp / "out/ep1"
     col.triggered(meta, ed)
     plan = col.select(meta)

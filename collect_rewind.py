@@ -53,7 +53,7 @@ META_COLUMNS = [
     "target_buffer_index", "target_episode_frame", "target_time_s", "target_progress", "target_nn_distance",
     "rewind_planned_s", "rewind_actual_s", "n_waypoints", "joint_distance_deg", "settled",
     "final_err_max_deg", "final_err_norm", "final_err_norm_over_tau", "final_err_shoulder_pan", "final_err_shoulder_lift", "final_err_elbow_flex", "final_err_wrist_flex", "final_err_wrist_roll",
-    "cube_before_x", "cube_before_y", "cube_after_x", "cube_after_y", "cube_shift_px", "cube_shift_from_start_px",
+    "cube_before_x", "cube_before_y", "cube_after_x", "cube_after_y", "cube_shift_px", "cube_shift_from_start_px", "cube_after_source", "cube_last_visible_age_s",
     "align_err_max_deg", "align_retries", "human_s", "discarded", "discard_reason", "autonomous_dir",
     # covariates (camera stays on automatic exposure; nothing is locked)
     "first_frame_table_gray", "first_frame_sheet_gray", "first_frame_gray_mean", "first_frame_table_rb", "outside_time_window",
@@ -258,6 +258,7 @@ class Collector:
             self.place_tol = float(json.loads(Path(cfg["positions_json"]).read_text()).get("tolerance_px", 3.0))
         self.pos_ptr = 0
         self._place = None                      # last placement reading in the RESET phase: (distance px or nan)
+        self._cube_last = None                  # last fully visible cube position since the trigger: (x, y, perf_counter time)
         self._start_warned = False
         self.meta_path = self.out / "rewind_meta.csv"
         self.dry = cfg["dry_run"]
@@ -667,6 +668,16 @@ class Collector:
         """Reset the policy (empties the ACT action queue / temporal ensembler), the processors and the action interpolator."""
         self.engine.reset(); self.interp.reset()
 
+    def track_cube(self, obs):
+        """Remember the last position at which the whole cube was visible (area >= cube_full_area_px, a single candidate): a partly hidden cube gives a shifted centre."""
+        rgb = obs.get("front")
+        if rgb is None:
+            return
+        import analyze_cube_positions as A
+        d = A.detect_cube(np.asarray(rgb))
+        if d["detected"] and d["area"] >= self.cfg["cube_full_area_px"] and d["n_candidates"] == 1:
+            self._cube_last = (float(d["cx"]), float(d["cy"]), time.perf_counter())
+
     def episode_covariates(self, rgb):
         """First-frame table gray (and other lighting numbers), read-back of the camera controls while the camera streams, time-window flag."""
         cov = LP.frame_lighting(rgb)
@@ -729,6 +740,7 @@ class Collector:
     def triggered(self, meta, ed):
         c = self.cfg
         self.phase = "triggered"
+        self._cube_last = None
         if not self.dry and self.ctx is not None:
             qr = self.policy_queue_len()
             meta["queue_remaining_at_trigger"] = "" if qr is None else qr
@@ -741,6 +753,7 @@ class Collector:
         if rgb is not None:
             save_png(ed / "at_trigger.png", rgb)
             meta["cube_before_x"], meta["cube_before_y"] = cube_position(rgb)
+            self.track_cube(obs)
         hold5 = state[:5].copy()
         gr = RC.GripperRamp(state[5], self.params["gripper_open_value"], c["gripper_step"])
         wait_ticks = int(round(c["trigger_wait_s"] * self.fps))
@@ -753,6 +766,9 @@ class Collector:
             obs = self.get_obs()
             d = self.send6(np.r_[hold5, gr.next()], obs)
             self.seg_frame(obs, d)
+            self._tick = getattr(self, "_tick", 0) + 1
+            if self._tick % 2 == 0 and not self.dry:
+                self.track_cube(obs)
             if gr.done:
                 extra += 1
                 if extra >= wait_ticks:
@@ -807,6 +823,9 @@ class Collector:
             cmd5, hit = ctrl.step()
             d = self.send6(np.r_[cmd5, gopen], obs)
             self.seg_frame(obs, d)
+            self._tick = getattr(self, "_tick", 0) + 1
+            if self._tick % 2 == 0 and not self.dry:
+                self.track_cube(obs)
             if hit is not None:
                 self.dry_rows.append(dict(waypoint=hit, **{f"sent_{k}": wp[hit][i] for i, k in enumerate(ARM_KEYS)},
                                           **{f"meas_{k}": meas[i] for i, k in enumerate(ARM_KEYS)}, tick=ticks))
@@ -824,6 +843,9 @@ class Collector:
             obs = self.get_obs(); meas = vec6(obs)
             d = self.send6(np.r_[final5, gopen], obs)
             self.seg_frame(obs, d)
+            self._tick = getattr(self, "_tick", 0) + 1
+            if self._tick % 2 == 0 and not self.dry:
+                self.track_cube(obs)
             res = det.update(meas[:5], final5)
             self.sleep_to(t0)
         err = np.abs(meas[:5] - final5)
@@ -919,21 +941,34 @@ class Collector:
                 retries = 0
 
     def align(self, meta, ed):
+        c = self.cfg
         obs = self.get_obs(); tgt = vec6(obs)
         err, retries = self.align_leader(tgt)
         meta.update(align_err_max_deg=float(np.abs(err).max()), align_retries=retries)
         obs = self.get_obs(); rgb = obs.get("front")
         if rgb is not None:
             save_png(ed / "after_align.png", rgb)
-            ax, ay = cube_position(rgb)
+            self.track_cube(obs)                                    # the frame after the alignment counts like any other frame
+            # cube position after the rewind: the LAST FULLY VISIBLE detection since the trigger (the arm often hides the cube at the target pose)
+            ref = self._cube_last
+            if ref is not None:
+                ax, ay = ref[0], ref[1]
+                meta["cube_after_source"] = "after_align" if time.perf_counter() - ref[2] < 0.5 else "last_visible_during_rewind"
+                meta["cube_last_visible_age_s"] = float(time.perf_counter() - ref[2])
+            else:
+                ax = ay = float("nan"); meta["cube_after_source"] = "never fully visible"
             meta["cube_after_x"], meta["cube_after_y"] = ax, ay
             bx, by = meta.get("cube_before_x", np.nan), meta.get("cube_before_y", np.nan)
             meta["cube_shift_px"] = float(np.hypot(ax - bx, ay - by)) if not np.isnan(ax) and not np.isnan(bx) else ""
-            sx, sy = meta.get("cube_start_x", np.nan), meta.get("cube_start_y", np.nan)    # at the trigger the gripper usually hides the cube
-            meta["cube_shift_from_start_px"] = float(np.hypot(ax - sx, ay - sy)) if not np.isnan(ax) and not np.isnan(sx) else ""
-            if np.isnan(ax):
-                self.wait_key("Cube not detected after the rewind (pushed out of the workspace, or hidden by the arm?). "
-                              "[c] keep the episode   [x] discard (cube out of workspace)", ("c",))
+            sx, sy = meta.get("cube_start_x", np.nan), meta.get("cube_start_y", np.nan)
+            shift = float(np.hypot(ax - sx, ay - sy)) if not np.isnan(ax) and not np.isnan(sx) else float("nan")
+            meta["cube_shift_from_start_px"] = "" if np.isnan(shift) else shift
+            if np.isnan(shift):
+                self.wait_key("The cube was never fully visible between the trigger and now (hidden by the arm?): its position cannot be checked. [c] keep the episode   [x] discard", ("c",))
+            elif shift > c["cube_move_prompt_px"]:
+                self.wait_key(f"The cube has moved {shift:.0f} px from its start position (last fully visible {meta['cube_last_visible_age_s']:.1f} s ago). [c] keep the episode   [x] discard", ("c",))
+            else:
+                print(f"cube check: last fully visible position {shift:.1f} px from its start ({meta['cube_after_source']}); no prompt", flush=True)
         print(f"ALIGN DONE: max leader-follower error {np.abs(err).max():.2f} deg", flush=True)
 
     # --- WAIT_START

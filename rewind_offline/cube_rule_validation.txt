@@ -1,0 +1,24 @@
+nominal full-cube area threshold 223 px^2; reference position sources: {'after_align': 20, 'last_visible_in_rewind': 8, 'never fully visible': 2}
+old rule (position from the single frame after the alignment): cube not detected in 6 of 30 attempts -> operator prompt in all of them
+
+threshold 3 px: the new rule asks the operator in 17 of 30 attempts; agrees with the operator (keep/keep + would ask/discarded): 19; asks but the operator kept: 9 [3, 11, 14, 15, 16, 18, 20, 23, 28]; does not ask but the operator discarded: 2 [8, 10]
+
+threshold 5 px: the new rule asks the operator in 10 of 30 attempts; agrees with the operator (keep/keep + would ask/discarded): 20; asks but the operator kept: 5 [14, 15, 18, 20, 23]; does not ask but the operator discarded: 5 [1, 2, 8, 10, 26]
+
+threshold 10 px: the new rule asks the operator in 5 of 30 attempts; agrees with the operator (keep/keep + would ask/discarded): 23; asks but the operator kept: 1 [23]; does not ask but the operator discarded: 6 [1, 2, 8, 10, 25, 26]
+
+threshold 15 px: the new rule asks the operator in 4 of 30 attempts; agrees with the operator (keep/keep + would ask/discarded): 24; asks but the operator kept: 0 []; does not ask but the operator discarded: 6 [1, 2, 8, 10, 25, 26]
+
+per attempt (threshold 10 px):
+ episode_id position  operator_kept     operator_reason        cube_ref_source  shift_from_start_px  new_rule_asks_at_10px
+          1      R11          False   arm_occluded_cube last_visible_in_rewind                  3.2                  False
+          2      R11          False cube_slightly_moved            after_align                  4.4                  False
+          5      R14          False   arm_occluded_cube    never fully visible                  NaN                   True
+          8      R08          False cube_slightly_moved            after_align                  0.1                  False
+         10      R13          False   arm_occluded_cube last_visible_in_rewind                  1.2                  False
+         21      R12          False      cube_displaced last_visible_in_rewind                 24.1                   True
+         22      R12          False      cube_displaced            after_align                 17.6                   True
+         23      R12           True                                after_align                 12.1                   True
+         25      R18          False   arm_occluded_cube last_visible_in_rewind                  6.5                  False
+         26      R18          False   arm_occluded_cube last_visible_in_rewind                  3.5                  False
+         29      R17          False   arm_occluded_cube    never fully visible                  NaN                   True
