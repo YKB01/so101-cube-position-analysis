@@ -1,0 +1,47 @@
+INFO 2026-11-19 14:52:13 _rollout.py:210 Building rollout context...
+INFO 2026-11-19 14:52:13 /context.py:177 Loading policy from '<policy>'...
+Loading weights from local directory
+INFO 2026-11-19 14:52:13 /context.py:209 Policy loaded: type=act, device=cuda
+INFO 2026-11-19 14:52:13 /context.py:236 Connecting robot (so100_follower)...
+INFO 2026-11-19 14:52:23 a_opencv.py:179 OpenCVCamera(0) connected.
+Traceback (most recent call last):
+  File "/home/ykb/cube_position_analysis/scripts/run_trial.py", line 288, in <module>
+    main()
+  File "/home/ykb/cube_position_analysis/scripts/run_trial.py", line 169, in main
+    return child_main(a.child)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/ykb/cube_position_analysis/scripts/run_trial.py", line 152, in child_main
+    R.main()
+  File "/home/ykb/lerobot/src/lerobot/scripts/lerobot_rollout.py", line 237, in main
+    rollout()
+  File "/home/ykb/lerobot/src/lerobot/configs/parser.py", line 320, in wrapper_inner
+    response = fn(cfg, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ykb/lerobot/src/lerobot/scripts/lerobot_rollout.py", line 211, in rollout
+    ctx = build_rollout_context(cfg, shutdown_event)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ykb/lerobot/src/lerobot/rollout/context.py", line 238, in build_rollout_context
+    robot.connect()
+  File "/home/ykb/lerobot/src/lerobot/utils/decorators.py", line 39, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ykb/lerobot/src/lerobot/robots/so_follower/so_follower.py", line 104, in connect
+    self.configure()
+  File "/home/ykb/lerobot/src/lerobot/robots/so_follower/so_follower.py", line 156, in configure
+    with self.bus.torque_disabled():
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ykb/miniforge3/envs/lerobot/lib/python3.12/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/home/ykb/lerobot/src/lerobot/motors/motors_bus.py", line 690, in torque_disabled
+    self.enable_torque(motors)
+  File "/home/ykb/lerobot/src/lerobot/motors/feetech/feetech.py", line 305, in enable_torque
+    self.write("Lock", motor, 1, num_retry=num_retry)
+  File "/home/ykb/lerobot/src/lerobot/utils/decorators.py", line 29, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ykb/lerobot/src/lerobot/motors/motors_bus.py", line 1093, in write
+    self._write(addr, length, id_, int_value, num_retry=num_retry, raise_on_error=True, err_msg=err_msg)
+  File "/home/ykb/lerobot/src/lerobot/motors/motors_bus.py", line 1117, in _write
+    raise ConnectionError(f"{err_msg} {self.packet_handler.getTxRxResult(comm)}")
+ConnectionError: Failed to write 'Lock' on id_=4 with '1' after 1 tries. [TxRxResult] There is no status packet!
+FATAL: exception not rethrown

@@ -1,0 +1,21 @@
+{
+  "nonce": "519f5b8f8a53653a3017ed11676f2124",
+  "key": {
+    "B": {
+      "model": "C",
+      "checkpoint": "/home/ykb/Checkpoints/act_red_cube_expert50_expert20_ft5000/checkpoints/005000/pretrained_model"
+    },
+    "C": {
+      "model": "R",
+      "checkpoint": "/home/ykb/Checkpoints/act_red_cube_mixed_hil_ft_20261015_150904/checkpoints/005000/pretrained_model"
+    },
+    "D": {
+      "model": "C_trunc",
+      "checkpoint": "/home/ykb/Checkpoints/act_red_cube_expert50_trunc20_ft5000/checkpoints/005000/pretrained_model"
+    },
+    "A": {
+      "model": "deep",
+      "checkpoint": "/home/ykb/Checkpoints/act_red_cube_expert50_rewind_deep20_ft5000/checkpoints/005000/pretrained_model"
+    }
+  }
+}

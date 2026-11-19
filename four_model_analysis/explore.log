@@ -1,0 +1,84 @@
+MWU (deep/R/C):
+                          metric      pair  median_A  median_B     p
+            closes (addendum 01) deep vs R     1.000     2.000 0.000
+            closes (addendum 01) deep vs C     1.000     1.000 0.086
+            closes (addendum 01)    R vs C     2.000     1.000 0.131
+            first grasp time (s) deep vs R     8.950     7.717 0.001
+            first grasp time (s) deep vs C     8.950     6.283 0.000
+            first grasp time (s)    R vs C     7.717     6.283 0.000
+           mean speed first 10 s deep vs R    23.697    26.141 0.001
+           mean speed first 10 s deep vs C    23.697    29.135 0.000
+           mean speed first 10 s    R vs C    26.141    29.135 0.000
+pan correction before grasp (px) deep vs R     3.017     6.266 0.000
+pan correction before grasp (px) deep vs C     3.017     0.000 0.000
+pan correction before grasp (px)    R vs C     6.266     0.000 0.000
+             correction time (s) deep vs R     0.667     1.300 0.000
+             correction time (s) deep vs C     0.667     0.417 0.001
+             correction time (s)    R vs C     1.300     0.417 0.000
+             aim x at grasp (px) deep vs R    -4.443    -5.256 0.376
+             aim x at grasp (px) deep vs C    -4.443    -2.871 0.440
+             aim x at grasp (px)    R vs C    -5.256    -2.871 0.169
+             aim y at grasp (px) deep vs R     9.457     2.659 0.020
+             aim y at grasp (px) deep vs C     9.457    12.967 0.207
+             aim y at grasp (px)    R vs C     2.659    12.967 0.014
+by model:
+          n  success  closes_mean  ...  aim_y_med  early  dur_med
+model                              ...                           
+deep     16       14         1.12  ...       9.46     14    22.88
+R        16        9         1.81  ...       2.66      3    29.60
+C        16       10         1.56  ...      12.97     10    21.75
+C_trunc  16        2         1.88  ...      13.99      4    29.60
+
+[4 rows x 11 columns]
+by position:
+                     n  success  closes  grasp_t  aim_x  aim_y
+position_id model                                             
+P1          C        8        4    1.62     6.77  -1.57  19.98
+            C_trunc  8        1    1.75     8.02  -2.44  23.26
+            R        8        4    1.75     7.77  -3.85  10.08
+            deep     8        6    1.25     8.85  -0.14  15.83
+P2          C        8        6    1.50     5.93  -4.91   4.89
+            C_trunc  8        1    2.00     7.67 -10.48   6.55
+            R        8        5    1.88     7.68  -6.19  -4.62
+            deep     8        8    1.00     9.02  -5.87   1.80
+closes distribution:
+n_gripper_closes   1   2  3
+model                      
+deep              14   2  0
+R                  3  13  0
+C                 10   3  3
+C_trunc            3  12  1
+table gray by model: {'deep': 115.3, 'R': 114.8, 'C': 115.8, 'C_trunc': 115.7}
+bright state (>=117.5) share overall: 0.02
+success by model x exposure state (sum,size):
+                sum  size
+model   bright           
+C       0         9    15
+        1         1     1
+C_trunc 0         2    16
+R       0         9    16
+deep    0        14    16
+deep: table_gray vs success point-biserial r=0.35 p=0.188
+R: table_gray vs success point-biserial r=-0.15 p=0.574
+C: table_gray vs success point-biserial r=0.14 p=0.612
+C_trunc: table_gray vs success point-biserial r=0.27 p=0.311
+exposure state vs success pooled (Fisher):
+  bright 1/1, dark 34/63, p=1.000
+trial order / start time / gray / exposure / success:
+deep: 02o@13:46g112 08o@13:56g117 09o@13:58g117 15x@14:09g113 19o@14:15g115 24x@14:24g116 26o@14:27g115 31o@14:35g115 34o@14:54g115 40o@15:04g116 44o@15:10g117 46o@15:13g115 52o@15:22g115 56o@15:28g117 57o@15:29g116 62o@15:36g116
+R: 03o@13:48g116 07x@13:54g117 12o@14:03g115 13o@14:04g104 17o@14:12g114 22o@14:21g117 27o@14:29g115 32o@14:36g116 35o@14:56g116 37o@14:59g116 42x@15:07g116 47x@15:14g117 50x@15:19g115 54x@15:25g113 59x@15:32g113 63x@15:38g116
+C: 01o@13:45g116 06o@13:53g117 10o@13:59g114 14o@14:07g120 20x@14:17g116 23x@14:22g117 28o@14:30g117 29x@14:31g115 36x@14:57g115 38x@15:01g115 43o@15:08g117 48x@15:16g115 49o@15:17g115 53o@15:23g115 60o@15:34g115 61o@15:35g115
+C_trunc: 04x@13:49g116 05x@13:51g116 11x@14:01g115 16x@14:11g115 18x@14:14g113 21x@14:19g116 25x@14:25g116 30x@14:33g115 33x@14:53g117 39x@15:02g117 41x@15:05g116 45x@15:11g116 51x@15:20g115 55o@15:26g116 58o@15:30g116 64x@15:39g116
+loop_dt_mean by model: {'deep': 33.534, 'R': 33.572, 'C': 33.547, 'C_trunc': 33.542}
+placement dist mean by model: {'deep': 1.43, 'R': 1.53, 'C': 1.32, 'C_trunc': 1.2}
+deep first half V01-32: 6/8  second half V33-64: 8/8  Fisher p=0.467
+R first half V01-32: 7/8  second half V33-64: 2/8  Fisher p=0.041
+C first half V01-32: 5/8  second half V33-64: 5/8  Fisher p=1.000
+C_trunc first half V01-32: 0/8  second half V33-64: 2/8  Fisher p=0.467
+reference sessions: {'retest R': '7/16', 'retest C': '15/16', 'trunc-session C': '8/16', 'trunc-session C_trunc': '0/16'}
+this session: {'deep': '14/16', 'R': '9/16', 'C': '10/16', 'C_trunc': '2/16'}
+  R (this) 9/16 vs retest R 7/16: Fisher p=0.724
+  C (this) 10/16 vs retest C 15/16: Fisher p=0.083
+  C (this) 10/16 vs trunc-session C 8/16: Fisher p=0.722
+  C_trunc (this) 2/16 vs trunc-session C_trunc 0/16: Fisher p=0.484
+done

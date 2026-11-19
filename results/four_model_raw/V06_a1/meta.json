@@ -1,0 +1,59 @@
+{
+  "trial_id": "V06",
+  "position_id": "P1",
+  "attempt": 1,
+  "dataset_repo_id": "YKB0123/rollout_four_V06_a1_20261119_135329",
+  "started_unix": 1795063993.2304704,
+  "ended_unix": 1795064041.7682452,
+  "early_end_key": true,
+  "return_code": 0,
+  "placement": {
+    "trial_id": "V06",
+    "position_id": "P1",
+    "target_x": 386.0,
+    "target_y": 182.0,
+    "measured_x": 384.79,
+    "measured_y": 181.62,
+    "dx": -1.21,
+    "dy": -0.38,
+    "dist": 1.27,
+    "timestamp_iso": "2026-11-19T13:53:07+09:00",
+    "timestamp_unix": 1795063987.305
+  },
+  "inference": {
+    "n_action_steps": 1,
+    "temporal_ensemble_coeff": 0.01
+  },
+  "episode_time_s": 30,
+  "chunks": {
+    "n_steps": 662,
+    "chunk_shape": [
+      100,
+      6
+    ],
+    "postproc_failed": 0
+  },
+  "outside_time_window": false,
+  "camera_controls": {
+    "cam_brightness": 0,
+    "cam_contrast": 42,
+    "cam_saturation": 64,
+    "cam_white_balance_automatic": 1,
+    "cam_gamma": 100,
+    "cam_gain": 0,
+    "cam_power_line_frequency": 1,
+    "cam_white_balance_temperature": 4600,
+    "cam_sharpness": 3,
+    "cam_backlight_compensation": 1,
+    "cam_auto_exposure": 3,
+    "cam_exposure_time_absolute": 157,
+    "cam_exposure_dynamic_framerate": 1,
+    "cam_read_while_running": true
+  },
+  "loop_dt_mean_ms": 33.53824990600032,
+  "loop_dt_max_ms": 56.13517761230469,
+  "first_frame_table_gray": 116.56046966731898,
+  "first_frame_sheet_gray": 171.30698863636363,
+  "first_frame_gray_mean": 133.366611328125,
+  "first_frame_table_rb": 1.3085974676605174
+}

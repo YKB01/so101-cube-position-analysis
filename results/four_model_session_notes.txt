@@ -1,0 +1,15 @@
+Four-model test session notes (2026-11-19)
+NOTE: this file was NOT written during the test (the operator did not create it); it is reconstructed afterwards from
+results/four_model_outcomes.csv, results/four_model_placement_log.csv and the per-trial meta.json timestamps (JST).
+
+Date: 2026-11-19 (single day). Inside the 10:00-16:00 window for all 64 trials (outside_time_window false for all).
+Start: 13:43:59 (first cube placement, V01). First trial started 13:44 (V01 attempt 1), first valid trial V01 attempt 2 at ~13:45.
+End: last outcome recorded 15:40:09 (V64).
+
+Planned rest: after block 8 (V29-V32). V32 outcome recorded 14:37:22; next cube placement (V33) 14:51:59 -> about 14.6 min
+(rest start/end were not written down at the time; duration >= 10 min is inferred from the timestamps).
+No other test-level interruption. Blocks completed in one sitting: 16 of 16.
+
+Trial-level interruptions (both: robot did not move, run aborted at start, 0 policy steps, return_code -6; see deviation log):
+- V01 attempt 1, outcome recorded 13:44:27 (interrupted); redone as attempt 2 (success path continued normally).
+- V33 attempt 1, outcome recorded 14:52:24 (interrupted); redone as attempt 2.

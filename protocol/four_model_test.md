@@ -89,4 +89,12 @@
 - 光照不受控（自动曝光）；盲测被 C_trunc 的行为部分削弱。
 
 ## 偏差日志
-（暂无）
+（测试结束后按时间补记，2026-11-19；测试全部在同一天 13:44–15:40 完成，第 8 个区块后休息一次。）
+1. **会话记录未在测试时写**：`results/four_model_session_notes.txt` 没有在测试过程中创建，现根据结果文件和 meta.json 的时间戳事后重建，文件内已注明。休息开始/结束时刻没有记录，
+   V32 记录于 14:37:22，V33 摆放于 14:51:59，间隔约 14.6 分钟（≥ 10 分钟的要求满足，但这是推算值）。
+2. **两次试验级中断（与模型无关，已按第 6 节重做）**：V01 attempt 1（13:44:27）和 V33 attempt 1（14:52:24），备注都是 "robot did not move"，`return_code = -6`，策略 0 步；
+   `run.log` 都是电机总线通信错误（`ConnectionError: Failed to write ... There is no status packet!`，V01 是 `Torque_Enable` id 5，V33 是 `Lock` id 4），发生在启动阶段。
+   这两次分别是测试开始后第一次运行和 10 分钟休息后第一次运行。两次都重做了同一 trial_id（attempt 2），被中断那次保留在 `results/four_model_outcomes.csv` 和 `results/four_model_raw/`。
+3. **V01、V02 各有两条摆放记录**：V02 的第一条摆放（13:45:05）出现在 V01 重做摆放（13:45:08）之前，原因没有查（可能是 V01 中断后摆放脚本的编号选择，未核实）；分析中取每个 trial 开始前最近的一条摆放记录。V33 同样有两条（对应重做）。所有试验最终摆放误差 ≤ 2.91 px（容差 3 px）。
+4. **备注拼写**：V04 备注 "time our"（超时）为笔误，不影响分类。
+结果见 `four_model_analysis/report_four_model.md`。

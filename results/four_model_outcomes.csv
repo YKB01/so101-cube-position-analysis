@@ -1,0 +1,67 @@
+trial_id,attempt,outcome,failure_type,note,timestamp_unix
+V01,1,interrupted,,robot did not move,1795063467.028
+V01,2,success,,1 trial,1795063560.710
+V02,1,success,,1 trial,1795063654.733
+V03,1,success,,2 trials,1795063751.785
+V04,1,fail,edge_not_grasped,time our,1795063851.081
+V05,1,fail,edge_not_grasped,time out,1795063957.287
+V06,1,success,,1 trial,1795064041.768
+V07,1,fail,dropped_after_grasp,grasp not precise dropped  time out,1795064138.562
+V08,1,success,,1 trial,1795064265.427
+V09,1,success,,1 trial,1795064354.364
+V10,1,success,,1 trial,1795064444.334
+V11,1,fail,cube_pushed_away,cube pushed out of workspace time out,1795064551.540
+V12,1,success,,2 trials,1795064661.432
+V13,1,success,,1 trial,1795064751.460
+V14,1,success,,1 trial,1795064891.128
+V15,1,fail,edge_not_grasped,time out,1795065011.968
+V16,1,fail,edge_not_grasped,time out,1795065126.822
+V17,1,success,,1 trial,1795065224.268
+V18,1,fail,edge_not_grasped,time out,1795065322.281
+V19,1,success,,1 trial,1795065409.548
+V20,1,fail,cube_pushed_away,grasp not precise cube pushed away time out,1795065498.516
+V21,1,fail,edge_not_grasped,time out,1795065629.170
+V22,1,success,,1 trial,1795065714.986
+V23,1,fail,edge_not_grasped,time out,1795065819.668
+V24,1,fail,cube_pushed_away,time out,1795065919.533
+V25,1,fail,edge_not_grasped,time out,1795066016.592
+V26,1,success,,1 trial,1795066101.794
+V27,1,success,,2 trials,1795066198.018
+V28,1,success,,1 trial,1795066283.194
+V29,1,fail,edge_not_grasped,time out,1795066374.022
+V30,1,fail,edge_not_grasped,time out,1795066465.202
+V31,1,success,,1 trial,1795066551.804
+V32,1,success,,2 trials,1795066642.319
+V33,1,interrupted,,robot did not move,1795067544.159
+V33,2,fail,edge_not_grasped,time out,1795067646.731
+V34,1,success,,1 trial,1795067732.748
+V35,1,success,,2 trials,1795067820.898
+V36,1,fail,cube_pushed_away,grasp not precise cube pushed away time out,1795067924.133
+V37,1,success,,2 trials,1795068028.013
+V38,1,fail,edge_not_grasped,time out,1795068120.921
+V39,1,fail,edge_not_grasped,time out,1795068216.664
+V40,1,success,,1 trial,1795068300.073
+V41,1,fail,edge_not_grasped,time out,1795068393.693
+V42,1,fail,edge_not_grasped,,1795068487.392
+V43,1,success,,1 trial,1795068572.943
+V44,1,success,,1 trial,1795068654.997
+V45,1,fail,edge_not_grasped,time out,1795068747.539
+V46,1,success,,1 trial,1795068838.348
+V47,1,fail,edge_not_grasped,time out,1795068931.424
+V48,1,fail,edge_not_grasped,time out,1795069029.860
+V49,1,success,,1 trial,1795069112.519
+V50,1,fail,edge_not_grasped,time out,1795069209.969
+V51,1,fail,dropped_after_grasp,dropped cube out of workspace,1795069294.648
+V52,1,success,,1 trial,1795069392.541
+V53,1,success,,1 trial,1795069467.983
+V54,1,fail,edge_not_grasped,time out,1795069562.848
+V55,1,success,,1 trial,1795069645.966
+V56,1,success,,1 trial,1795069740.583
+V57,1,success,,1 trial,1795069824.195
+V58,1,success,,1 trial,1795069910.800
+V59,1,fail,edge_not_grasped,time out,1795070002.711
+V60,1,success,,1 trial,1795070087.991
+V61,1,success,,1 trial,1795070165.135
+V62,1,success,,1 trial,1795070248.185
+V63,1,fail,edge_not_grasped,time out,1795070340.177
+V64,1,fail,cube_pushed_away,cube pushed out of workspace,1795070409.274

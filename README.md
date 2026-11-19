@@ -146,6 +146,13 @@ conditions match, whether the truncation-session drift can be explained by it, a
 - Collection protocol: `protocol/rewind_collect_deep.md` (+ `rewind_collect_deep_config.json`, `rewind_collect_positions.json`, `rewind_collect_order.csv`). Before it, run `--policy_only` with `--n_action_steps 100 --temporal_ensemble_coeff none --compare_model baseline_default`
   (reference: the 11/4 baseline evaluation with the default settings) and `scripts/run_trial.py PRACTICE` + `scripts/check_trial_covariates.py`.
 
+## Four-model test (deep vs R vs C vs C_trunc), 2026-11-19
+
+Pre-registered blind test, 64 trials (16 per model, P1/P2 alternating blocks); protocol `protocol/four_model_test.md`, key hash verified before unblinding.
+Result: deep 14/16, C 10/16, R 9/16, C_trunc 2/16. **Primary (deep vs R) p = 0.113, not significant** (difference +31 pp, Newcombe 95% CI [-0, +56]); deep vs C p = 0.22, R vs C p = 1.0; C_trunc significantly worst (again).
+Exploratory: deep approaches slowest and closes the gripper least; R's failures are concentrated in the second half of the session (post-hoc pattern, p = 0.041 uncorrected); the exposure state barely varied (1 of 64 bright).
+Report `four_model_analysis/report_four_model.md`; scripts `analyze_four_model.py` (pre-registered comparisons), `analyze_four_model_explore.py` (exploratory).
+
 ## To do (planned, not started)
 - **After 11/24:** rewind path option `--rewind_path replay|direct` (two-waypoint joint-space move to the rewind target with the existing step limit, joint clamp and settle test; `replay` stays the default for the collected data) and, after an empty grasp (gripper reading < 4.2),
   opening the gripper while the arm lifts instead of before it moves. Motivation: in the 20-correction collection the cube was knocked during the rewind in 25% of the attempts (`rewind_offline/report_deep20_collection.md`, section 3). Planned test: `--dry_run`, then 10 episodes per path type on the same positions, outcome = cube shift in the segment video.

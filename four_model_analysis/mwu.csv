@@ -1,0 +1,22 @@
+metric,pair,n_A,n_B,median_A,median_B,p,rank_biserial
+closes (addendum 01),deep vs R,16,16,1.0000,2.0000,0.0001,-0.6875
+closes (addendum 01),deep vs C,16,16,1.0000,1.0000,0.0861,-0.2734
+closes (addendum 01),R vs C,16,16,2.0000,1.0000,0.1312,0.2852
+first grasp time (s),deep vs R,16,16,8.9500,7.7167,0.0010,0.6875
+first grasp time (s),deep vs C,16,16,8.9500,6.2833,0.0000,0.9922
+first grasp time (s),R vs C,16,16,7.7167,6.2833,0.0000,0.9688
+mean speed first 10 s,deep vs R,16,16,23.6970,26.1414,0.0013,-0.6719
+mean speed first 10 s,deep vs C,16,16,23.6970,29.1350,0.0000,-0.9297
+mean speed first 10 s,R vs C,16,16,26.1414,29.1350,0.0000,-0.8828
+pan correction before grasp (px),deep vs R,16,16,3.0170,6.2661,0.0001,-0.8398
+pan correction before grasp (px),deep vs C,16,16,3.0170,0.0000,0.0000,0.9883
+pan correction before grasp (px),R vs C,16,16,6.2661,0.0000,0.0000,0.9727
+correction time (s),deep vs R,16,16,0.6667,1.3000,0.0000,-0.9961
+correction time (s),deep vs C,16,16,0.6667,0.4167,0.0006,0.7109
+correction time (s),R vs C,16,16,1.3000,0.4167,0.0000,1.0000
+aim x at grasp (px),deep vs R,16,16,-4.4430,-5.2556,0.3758,0.1875
+aim x at grasp (px),deep vs C,16,16,-4.4430,-2.8709,0.4397,-0.1641
+aim x at grasp (px),R vs C,16,16,-5.2556,-2.8709,0.1689,-0.2891
+aim y at grasp (px),deep vs R,16,16,9.4575,2.6593,0.0205,0.4844
+aim y at grasp (px),deep vs C,16,16,9.4575,12.9672,0.2067,-0.2656
+aim y at grasp (px),R vs C,16,16,2.6593,12.9672,0.0136,-0.5156

@@ -1,0 +1,37 @@
+{
+  "trial_id": "V01",
+  "position_id": "P2",
+  "attempt": 1,
+  "dataset_repo_id": "YKB0123/rollout_four_V01_a1",
+  "started_unix": 1795063450.5671778,
+  "ended_unix": 1795063467.027857,
+  "early_end_key": false,
+  "return_code": -6,
+  "placement": {
+    "trial_id": "V01",
+    "position_id": "P2",
+    "target_x": 394.0,
+    "target_y": 212.0,
+    "measured_x": 393.87,
+    "measured_y": 212.86,
+    "dx": -0.13,
+    "dy": 0.86,
+    "dist": 0.87,
+    "timestamp_iso": "2026-11-19T13:43:59+09:00",
+    "timestamp_unix": 1795063439.408
+  },
+  "inference": {
+    "n_action_steps": 1,
+    "temporal_ensemble_coeff": 0.01
+  },
+  "episode_time_s": 30,
+  "chunks": {
+    "n_steps": 0,
+    "chunk_shape": null,
+    "postproc_failed": 0
+  },
+  "outside_time_window": false,
+  "camera_controls": {},
+  "loop_dt_error": "[Errno 2] No such file or directory: '/home/ykb/cube_position_analysis/results/four_model_raw/V01_a1/chunks.npz'",
+  "lighting_error": "404 Client Error. (Request ID: Root=1-6afe7ead-2b56289e57ef5cbd12af47ab;82adde25-9122-456a-bbea-f984e3677ea4)\n\nRepository Not Found for url: https://huggingface.co/api/datasets/YKB0123/rollout_four_V01_a1/refs.\nPlease make sure you specified the correct `repo_id` and `repo_type`.\nIf you are trying to access a private or gated repo, make sure you are authenticated and your token has the required permissions.\nFor more details, see https://huggingface.co/docs/huggingface_hub/authentication"
+}
